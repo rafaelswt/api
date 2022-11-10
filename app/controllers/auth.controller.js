@@ -103,7 +103,7 @@ exports.vaga = (req, res) => {
         return;
       }
 
-      res.send({ message: "Vaga was registered successfully!" });
+      res.send({ message: "Vaga foi registrada com sucesso" });
     });
   })
   

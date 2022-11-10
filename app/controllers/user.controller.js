@@ -77,7 +77,7 @@ exports.Vaga = (req, res) => {
       }
 
       if (!vaga) {
-        return res.status(404).send({ message: "Vaga Not found." });
+        return res.status(404).send({ message: "Vaga não encontrada." });
       }
 
       res.json(vaga);
@@ -97,10 +97,10 @@ exports.deleteVaga = (req, res) => {
     }
 
     if (!vaga) {
-      return res.status(404).send({ message: "Vaga Not found." });
+      return res.status(404).send({ message: "Vaga não encontrada." });
     }
 
-    res.json(vaga);
+    res.send({ message: "A vaga foi deletada com Sucesso" });
   }); 
 
 }
