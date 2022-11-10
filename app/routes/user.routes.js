@@ -28,11 +28,13 @@ module.exports = function(app) {
 
   app.get(
     "/api/test/vaga",
+    [authJwt.verifyToken],
     controller.Vaga
   );
 
   app.get(
     "/api/test/del",
+    [authJwt.verifyToken],
     controller.deleteVaga
   );
 };
