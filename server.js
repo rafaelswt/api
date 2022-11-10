@@ -6,7 +6,7 @@ require('dotenv').config()
 const app = express();
 
 var corsOptions = {
-  origin: "*"
+  origin: "https://aupamatch.pages.dev/"
 };
 
 app.use(cors(corsOptions));
