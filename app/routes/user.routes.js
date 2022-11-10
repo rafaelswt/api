@@ -34,7 +34,6 @@ module.exports = function(app) {
 
   app.get(
     "/api/test/del",
-    [authJwt.verifyToken],
     controller.deleteVaga
   );
 };
