@@ -34,6 +34,19 @@ module.exports = function(app) {
 
   app.get(
     "/api/test/del",
+    [authJwt.verifyToken],
     controller.deleteVaga
+  );
+
+  app.get(
+    "/api/test/match",
+    [authJwt.verifyToken],
+    controller.match
+  );
+
+  app.get(
+    "/api/test/matches",
+    [authJwt.verifyToken],
+    controller.findMatches
   );
 };

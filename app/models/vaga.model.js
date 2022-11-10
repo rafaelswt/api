@@ -15,6 +15,12 @@ const User = mongoose.model(
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
       }
+    ],
+    aupair: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Aupair"
+      }
     ]
   })
 );
