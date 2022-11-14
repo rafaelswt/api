@@ -82,8 +82,38 @@ exports.Vaga = (req, res) => {
     });
 
   }
+};
 
+exports.criarvaga = (req, res) => {
+  const vaga = new Vaga({
+    escolaridade: req.body.escolaridade,
+    experiencia: req.body.experiencia,
+    filhos: req.body.filhos,
+    descricao: req.body.descricao,
+    natacao: req.body.natacao,
+    carro: req.body.carro,
+    habilitacao: req.body.habilitacao,
+    email: req.body.email,
+    id: req.body.id
+  });
 
+  User.findOne({ id: req.body.id }, (err, user) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+
+    vaga.user = req.body.id;
+    vaga.save(err => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      res.send({ message: "Vaga foi registrada com sucesso" });
+    });
+  })
+  
 };
 
 exports.findMatches = (req, res) => {

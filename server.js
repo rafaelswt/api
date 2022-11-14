@@ -3,12 +3,16 @@ const cors = require("cors");
 const dbConfig = require("./app/config/db.config");
 require('dotenv').config()
 
+const swaggerUI = require("swagger-ui-express")
+const swaggerDocument = require("./swagger.json")
+
 const app = express();
+
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 
 var corsOptions = {
   origin: "*"
 };
-
 app.use(cors(corsOptions));
 
 // parse requests of content-type - application/json

@@ -10,42 +10,47 @@ module.exports = function(app) {
     next();
   });
 
-  app.get("/api/test/all", controller.allAccess);
+  app.get("/api/all", controller.allAccess);
 
-  app.get("/api/test/user", [authJwt.verifyToken], controller.userBoard);
+  app.get("/api/user", [authJwt.verifyToken], controller.userBoard);
 
   app.get(
-    "/api/test/mod",
+    "/api/mod",
     [authJwt.verifyToken, authJwt.isModerator],
     controller.moderatorBoard
   );
 
   app.get(
-    "/api/test/admin",
+    "/api/admin",
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.adminBoard
   );
 
+
   app.get(
-    "/api/test/vaga",
+    "/api/vaga",
     [authJwt.verifyToken],
     controller.Vaga
   );
 
+  app.post(
+    "/api/vaga", controller.criarvaga
+  );
+
   app.get(
-    "/api/test/del",
+    "/api/del",
     [authJwt.verifyToken],
     controller.deleteVaga
   );
 
   app.get(
-    "/api/test/match",
+    "/api/match",
     [authJwt.verifyToken],
     controller.match
   );
 
   app.get(
-    "/api/test/matches",
+    "/api/matches",
     [authJwt.verifyToken],
     controller.findMatches
   );
