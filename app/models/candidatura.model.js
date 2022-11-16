@@ -1,20 +1,13 @@
 const mongoose = require("mongoose");
 
-const User = mongoose.model(
-  "Vaga",
+const Candidatura = mongoose.model(
+  "Candidatura",
   new mongoose.Schema({
-    escolaridade: String,
-    experiencia: String,
-    filhos: String,
-    descricao: String,
-    natacao: Boolean,
-    habilitacao: Boolean,
-    carro: Boolean,
     escolha: Boolean,
-    user: [
+    vaga: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: "Vaga"
       }
     ],
     aupair: [
@@ -22,8 +15,14 @@ const User = mongoose.model(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Aupair"
       }
+    ],
+    user: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
     ]
   })
 );
 
-module.exports = User;
+module.exports = Candidatura;
