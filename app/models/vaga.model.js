@@ -10,6 +10,7 @@ const User = mongoose.model(
     natacao: Boolean,
     habilitacao: Boolean,
     carro: Boolean,
+    escolha: Boolean,
     user: [
       {
         type: mongoose.Schema.Types.ObjectId,

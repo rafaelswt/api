@@ -28,21 +28,19 @@ exports.vagas = (req, res) => {
 
   if(req.query.roles  === "ROLE_FAMILY")
   {
-    Vaga.find({   })
-
+    Vaga.find({'user':  mongoose.Types.ObjectId(req.query.userID)})
     .exec((err, vaga) => {
       if (err) {
         res.status(500).send({ message: err });
         return;
       }
-
       res.json(vaga);
     } 
   )
 }
   else if(req.query.roles === "ROLE_AUPAIR")
   {
-    Vaga.find({'aupair': {$ne : mongoose.Types.ObjectId(req.query.userID)}})
+    Vaga.find({$and: [{'aupair': {$ne : mongoose.Types.ObjectId(req.query.userID)}}, {"escolha" : 'false'} ]})
     .exec((err, vaga) => {
       if (err) {
         res.status(500).send({ message: err });
@@ -121,7 +119,8 @@ exports.criarvaga = (req, res) => {
     carro: req.body.carro,
     habilitacao: req.body.habilitacao,
     email: req.body.email,
-    id: req.body.id
+    id: req.body.id,
+    escolha : false
   });
 
   User.findOne({ id: req.body.id }, (err, user) => {
@@ -205,7 +204,9 @@ exports.deleteCandidatura = (req, res) => {
       return;
     }
 
-    vaga.aupair.pull(req.query.userID);
+    vaga.escolha = false
+
+    vaga.aupair.pull(req.query.aupairID);
     
     vaga.save(err => {
       if (err) {
@@ -275,6 +276,28 @@ exports.match = (req, res) => {
       if (!candidatura) {
         return res.status(404).send({ message: "Candidatura não encontrada." });
       }
+    }); 
+
+    Vaga.findById(req.query.vagaID)
+    .exec((err, vaga) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }   
+
+      if (!vaga) {
+        return res.status(404).send({ message: "Vaga não encontrada." });
+      }
+
+      vaga.escolha = true
+      vaga.save(err => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
+      });
+      
+
     }); 
     
 };
