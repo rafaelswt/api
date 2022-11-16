@@ -8,6 +8,7 @@ db.mongoose = mongoose;
 db.user = require("./user.model");
 db.role = require("./role.model");
 db.vaga = require("./vaga.model")
+db.candidatura = require("./candidatura.model")
 
 db.ROLES = ["user", "aupair", "family"];
 
