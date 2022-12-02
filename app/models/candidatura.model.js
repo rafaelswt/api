@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const Candidatura = mongoose.model(
-  "Candidatura",
+  "aupair_has_vaga",
   new mongoose.Schema({
     escolha: Boolean,
     vaga: [
