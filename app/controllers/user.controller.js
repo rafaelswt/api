@@ -137,17 +137,17 @@ exports.criarvaga = (req, res) => {
 
   const familia_has_vaga = new Familia_has_vaga({
     vaga : vaga._id,
-    user: req.body.id
+    user: req.userId
   });
   familia_has_vaga.save()
 
-  User.findOne({ id: req.body.id }, (err, user) => {
+  User.findOne({ id: req.userId }, (err, user) => {
     if (err) {
       res.status(500).send({ message: err });
       return;
     }
 
-    vaga.user = req.body.id;
+    vaga.user = req.userId;
     vaga.save(err => {
       if (err) {
         res.status(500).send({ message: err });
