@@ -111,15 +111,27 @@ exports.candidaturas = (req, res) => {
 
 exports.criarvaga = (req, res) => {
   const vaga = new Vaga({
-    escolaridade: req.body.escolaridade,
-    experiencia: req.body.experiencia,
-    filhos: req.body.filhos,
-    descricao: req.body.descricao,
+    data_de_nascimento : req.body.data_de_nascimento,
+    genero: req.body.genero,
+    numero_identificacao_nacional: req.body.numero_identificacao_nacional,
+    nacionalidade: req.body.nacionalidade,
+    resumo: req.body.resumo,
+    passaporte: req.body.passaporte,
+    habilitacao_pid: req.body.habilitacao_pid,
+    quantidade_criancas: req.body.filhos,
+    experiencia_trabalho: req.body.experiencia,
     natacao: req.body.natacao,
-    carro: req.body.carro,
-    habilitacao: req.body.habilitacao,
-    email: req.body.email,
-    id: req.body.id,
+    carro_exclusivo: req.body.carro_exclusivo,
+    receber_newsletter: req.body.receber_newsletter,
+    data_disponibilidade : req.body.data_disponibilidade,
+    data_criacao_vaga : req.body.data_criacao_vaga,
+    data_finalizacao_vaga : req.body.data_finalizacao_vaga,
+    titulo_vaga: req.body.titulo_vaga,
+    descricao: req.body.descricao,
+    vaga_patrocinada: req.body.vaga_patrocinada,
+    pais: req.body.pais,
+    estado_provincia: req.body.estado_provincia,
+    escolaridade: req.body.escolaridade,
     escolha : false
   });
 
@@ -154,7 +166,6 @@ exports.criar_aupair = (req, res) => {
       res.status(500).send({ message: err });
       return;
     }
-    console.log(req.userId)
 
     if (!user) {
       return res.status(404).send({ message: "Usuário não encontrado." });

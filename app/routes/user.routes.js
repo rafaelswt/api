@@ -41,7 +41,7 @@ module.exports = function(app) {
   );
 
   app.post(
-    "/api/vaga", controller.criarvaga
+    "/api/vaga",[authJwt.verifyToken], controller.criarvaga
   );
 
   app.get(
