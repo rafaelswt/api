@@ -326,7 +326,6 @@ exports.candidatarse = (req, res) => {
     aupair: req.userId,
     escolha: false
   })
-    candidatura.save()
 
     Vaga.findById(req.query.vagaID)
     .exec((err, vaga) => {
@@ -335,7 +334,7 @@ exports.candidatarse = (req, res) => {
         return;
       }   
 
-      candidatura.user = vaga.user[0]
+      candidatura.user = vaga.user
       candidatura.save()
 
       vaga.aupair.push(req.query.aupairID);
