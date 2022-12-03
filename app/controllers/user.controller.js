@@ -323,8 +323,7 @@ exports.deleteCandidatura = (req, res) => {
 exports.candidatarse = (req, res) => {
   const candidatura = new Candidatura({
     vaga: req.query.vagaID,
-    aupair: req.query.aupairID,
-    user: req.query.userID,
+    aupair: req.userId,
     escolha: false
   })
     candidatura.save()
@@ -335,7 +334,10 @@ exports.candidatarse = (req, res) => {
         res.status(500).send({ message: err });
         return;
       }   
-      
+
+      candidatura.user = vaga.user[0]
+      candidatura.save()
+
       vaga.aupair.push(req.query.aupairID);
       vaga.save(err => {
         if (err) {
