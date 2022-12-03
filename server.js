@@ -23,6 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 
 const db = require("./app/models");
 const Role = db.role;
+const Idioma = db.idioma;
+const Escolaridade = db.escolaridade;
+const Religiao = db.religiao;
 
 db.mongoose
   .connect(process.env.MONGODB_URI || `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`, {
@@ -87,4 +90,108 @@ function initial() {
       });
     }
   });
+
+  Idioma.estimatedDocumentCount((err, count) => {
+    if (!err && count === 0) {
+      new Idioma({
+        descricao: "Inglês"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'Inglês' to idioma collection");
+      });
+
+      new Idioma({
+        descricao: "Francês"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'Francês' to idioma collection");
+      });
+
+      new Idioma({
+        descricao: "Espanhol"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'Espanhol' to idioma collection");
+      });
+    }
+  });
+
+  Escolaridade.estimatedDocumentCount((err, count) => {
+    if (!err && count === 0) {
+      new Escolaridade({
+        descricao: "Ensino Fundamental"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'Ensino Fundamental' to escolaridade collection");
+      });
+
+      new Escolaridade({
+        descricao: "Ensino Médio"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'Ensino Médio' to escolaridade collection");
+      });
+
+      new Escolaridade({
+        descricao: "Ensino Superior"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'Ensino Superior' to escolaridade collection");
+      });
+    }
+  });
+
+  Religiao.estimatedDocumentCount((err, count) => {
+    if (!err && count === 0) {
+      new Religiao({
+        descricao: "Católica"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'Católica' to religiao collection");
+      });
+
+      new Religiao({
+        descricao: "Evangélica"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'Evangélica' to religiao collection");
+      });
+
+      new Religiao({
+        descricao: "Judaica"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'Judaica' to religiao collection");
+      });
+    }
+  });
+
+
 }

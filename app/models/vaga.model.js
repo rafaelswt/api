@@ -11,6 +11,7 @@ const User = mongoose.model(
     habilitacao: Boolean,
     carro: Boolean,
     escolha: Boolean,
+    score : String,
     user: [
       {
         type: mongoose.Schema.Types.ObjectId,

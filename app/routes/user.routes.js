@@ -1,5 +1,6 @@
-const { authJwt } = require("../middlewares");
+const { authJwt, verifySignUp } = require("../middlewares");
 const controller = require("../controllers/user.controller");
+const verifyAupairProfile = require("../middlewares/verifyAupairProfile");
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -89,5 +90,18 @@ module.exports = function(app) {
     "/api/match",
     [authJwt.verifyToken],
     controller.match
+  );
+
+  app.post(
+    "/api/perfil",[authJwt.verifyToken,
+      verifyAupairProfile.checkDuplicateProfile], controller.criar_aupair
+  );
+
+  app.get(
+    "/api/perfil",[authJwt.verifyToken], controller.aupair_profile
+  );
+
+  app.delete(
+    "/api/perfil/",[authJwt.verifyToken], controller.aupair_profile_delete
   );
 };

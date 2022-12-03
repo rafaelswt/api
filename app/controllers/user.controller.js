@@ -1,10 +1,12 @@
 const config = require("../config/auth.config");
-const { vaga, user, candidatura } = require("../models");
+const { vaga, user, candidatura, familia_has_vaga } = require("../models");
 const db = require("../models");
 const User = db.user;
 const Vaga = db.vaga;
 const Candidatura = db.candidatura;
 const mongoose = require('mongoose');
+const Familia_has_vaga = db.familia_has_vaga;
+const Aupair = db.aupair;
 mongoose.Promise = global.Promise;
 
 exports.allAccess = (req, res) => {
@@ -25,7 +27,6 @@ exports.moderatorBoard = (req, res) => {
 };
 
 exports.vagas = (req, res) => {
-
   if(req.query.roles  === "ROLE_FAMILY")
   {
     Vaga.find({'user':  mongoose.Types.ObjectId(req.query.userID)})
@@ -41,24 +42,23 @@ exports.vagas = (req, res) => {
   else if(req.query.roles === "ROLE_AUPAIR")
   {
     Vaga.find({$and: [{'aupair': {$ne : mongoose.Types.ObjectId(req.query.userID)}}, {"escolha" : 'false'} ]})
-    .exec((err, vaga) => {
+    .exec((err, vagas) => {
       if (err) {
         res.status(500).send({ message: err });
         return;
       }
 
-      if (!vaga) {
-        return res.status(404).send({ message: "Vaga não encontrada." });
+      if (!vagas) {
+        return res.status(404).send({ message: "Nenhuma Vaga não encontrada." });
       }
 
-      res.json(vaga);
+      res.json(vagas);
     });
 
   }
 };
 
 exports.vaga = (req, res) => {
-
     Vaga.findById(req.query.vagaID)
     .exec((err, vaga) => {
       if (err) {
@@ -75,7 +75,6 @@ exports.vaga = (req, res) => {
 }
 
 exports.candidaturas = (req, res) => {
-
   if(req.query.roles  === "ROLE_FAMILY")
   {
     Vaga.find({   })
@@ -103,6 +102,7 @@ exports.candidaturas = (req, res) => {
         return res.status(404).send({ message: "Vaga não encontrada." });
       }
 
+
       res.json(vaga);
     });
 
@@ -123,6 +123,12 @@ exports.criarvaga = (req, res) => {
     escolha : false
   });
 
+  const familia_has_vaga = new Familia_has_vaga({
+    vaga : vaga._id,
+    user: req.body.id
+  });
+  familia_has_vaga.save()
+
   User.findOne({ id: req.body.id }, (err, user) => {
     if (err) {
       res.status(500).send({ message: err });
@@ -141,6 +147,89 @@ exports.criarvaga = (req, res) => {
   })
   
 };
+
+exports.criar_aupair = (req, res) => {
+  User.findOne({ "_id": mongoose.Types.ObjectId(req.userId) }, (err, user) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    console.log(req.userId)
+
+    if (!user) {
+      return res.status(404).send({ message: "Usuário não encontrado." });
+    }
+
+    const aupair = new Aupair({
+      telefone: req.body.telefone,
+      cep: req.body.cep,
+      logradouro: req.body.logradouro,
+      numero: req.body.numero,
+      cidade: req.body.cidade,
+      estado: req.body.estado, 
+      data_de_nascimento: req.body.data_de_nascimento,
+      genero: req.body.genero,
+      cpf: req.body.cpf,
+      nacionalidade: req.body.nacionalidade,
+      resumo: req.body.resumo,
+      idioma : req.body.idioma,
+      passaporte: req.body.passaporte,
+      quantidade_criancas: req.body.quantidade_criancas,
+      carro_exclusivo: req.body.carro_exclusivo,
+      receber_newsletter: req.body.receber_newsletter,
+      data_disponibilidade: req.body.data_disponibilidade,
+      escolaridade: req.body.escolaridade,
+      experiencia: req.body.experiencia,
+      natacao: req.body.natacao,
+      habilitacao: req.body.habilitacao,
+    });
+
+    aupair.aupair = req.userId;
+    aupair.save(err => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      res.send({ message: "Perfil registrado com sucesso" });
+    });
+  })
+  
+};
+
+exports.aupair_profile = (req, res) => {
+  Aupair.findOne({'aupair.0': mongoose.Types.ObjectId(req.userId)})
+    .exec((err, user) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      if (!user) {
+        return res.status(404).send({ message: "Aupair Not found." });
+      }
+
+      res.json(user);
+
+    });
+};
+
+exports.aupair_profile_delete = (req, res) => {
+  Aupair.findOneAndDelete({'aupair.0': mongoose.Types.ObjectId(req.userId)})
+    .exec((err, user) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      if (!user) {
+        return res.status(404).send({ message: "Perfil não encontrado " });
+      }
+
+      res.send({ message: "Perfil deletado com sucesso" });
+    });
+};
+
 
 exports.findMatches = (req, res) => {
   if(req.query.roles  === "ROLE_FAMILY")
