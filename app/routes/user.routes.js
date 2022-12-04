@@ -1,6 +1,7 @@
 const { authJwt, verifySignUp } = require("../middlewares");
 const controller = require("../controllers/user.controller");
 const verifyAupairProfile = require("../middlewares/verifyAupairProfile");
+const profileUser = require("../middlewares/profileUser");
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -30,7 +31,8 @@ module.exports = function(app) {
 
   app.get(
     "/api/vagas",
-    [authJwt.verifyToken],
+    [authJwt.verifyToken,
+    profileUser.parseUser],
     controller.vagas
   );
 

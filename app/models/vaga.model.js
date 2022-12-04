@@ -5,11 +5,11 @@ const User = mongoose.model(
   new mongoose.Schema({
     escolaridade: String,
     experiencia: String,
-    filhos: String,
+    quantidade_criancas: String,
     descricao: String,
     natacao: Boolean,
     habilitacao: Boolean,
-    carro: Boolean,
+    carro_exclusivo: Boolean,
     escolha: Boolean,
     score : String,
     user: [
