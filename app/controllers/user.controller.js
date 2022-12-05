@@ -157,7 +157,7 @@ exports.criarvaga = (req, res) => {
     passaporte: req.body.passaporte,
     habilitacao_pid: req.body.habilitacao_pid,
     habilitacao: req.body.habilitacao,
-    quantidade_criancas: req.body.filhos,
+    quantidade_criancas: req.body.quantidade_criancas,
     experiencia_trabalho: req.body.experiencia,
     natacao: req.body.natacao,
     carro_exclusivo: req.body.carro_exclusivo,
