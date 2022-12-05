@@ -63,30 +63,53 @@ exports.vagas = (req, res) => {
             if (vagas[i].natacao != undefined && aupair.natacao != undefined) {
               if (aupair.natacao.toString() === vagas[i].natacao.toString()) {
                 score = score + 1
+                console.log("natacao")
               }
             }
             if (vagas[i].escolaridade != undefined && aupair.escolaridade != undefined) {
               if (aupair.escolaridade.toString() === vagas[i].escolaridade.toString()) {
                 score = score + 1
+                console.log("escolaridade")
               }
             }
             if (vagas[i].habilitacao != undefined && aupair.habilitacao != undefined) {
               if (aupair.habilitacao.toString() === vagas[i].habilitacao.toString()) {
                 score = score + 1
+                console.log("habilitacao")
               }
             }
             if (vagas[i].carro_exclusivo != undefined && aupair.carro_exclusivo != undefined) {
               if (aupair.carro_exclusivo.toString() === vagas[i].carro_exclusivo.toString()) {
                 score = score + 1
+                console.log("carro_exclusivo")
               }
             }
             if (vagas[i].quantidade_criancas != undefined && aupair.quantidade_criancas != undefined) {
               if (vagas[i].quantidade_criancas.toString() === aupair.quantidade_criancas.toString()) {
                 score = score + 1
+                console.log("quantidade_criancas")
               }
             }
-  
-            vagas[i].score = (score * 100 / 5).toFixed(0).toString().concat("%")
+            if (vagas[i].genero != undefined && aupair.genero != undefined) {
+              if (vagas[i].genero.toString() === aupair.genero.toString()) {
+                score = score + 1
+                console.log("genero")
+              }
+            }
+            if (vagas[i].nacionalidade != undefined && aupair.nacionalidade != undefined) {
+              if (vagas[i].nacionalidade.toString() === aupair.nacionalidade.toString()) {
+                score = score + 1
+                console.log("nacionalidade")
+              }
+            }
+            if (vagas[i].idioma != undefined && aupair.idioma != undefined) {
+              if (vagas[i].idioma.toString() === aupair.idioma.toString()) {
+                score = score + 1
+                console.log("idioma")
+              }
+            }
+
+            vagas[i].score = (score * 100 / 8).toFixed(0).toString().concat("%")
           }
 
         }
