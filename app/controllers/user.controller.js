@@ -39,7 +39,7 @@ exports.vagas = (req, res) => {
       )
   }
   else if (req.query.roles === "ROLE_AUPAIR") {
-    Vaga.find({ $and: [{ 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } }, { "escolha": 'false' }] })
+    Vaga.find( { 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } } )
       .exec((err, vagas) => {
         if (err) {
           res.status(500).send({ message: err });
@@ -148,11 +148,12 @@ exports.candidaturas = (req, res) => {
 
 exports.criarvaga = (req, res) => {
   const vaga = new Vaga({
-    data_de_nascimento: req.body.data_de_nascimento,
     genero: req.body.genero,
     numero_identificacao_nacional: req.body.numero_identificacao_nacional,
     nacionalidade: req.body.nacionalidade,
     resumo: req.body.resumo,
+    idioma: req.body.idioma,
+    religiao: req.body.religiao,
     passaporte: req.body.passaporte,
     habilitacao_pid: req.body.habilitacao_pid,
     habilitacao: req.body.habilitacao,
@@ -170,7 +171,6 @@ exports.criarvaga = (req, res) => {
     pais: req.body.pais,
     estado_provincia: req.body.estado_provincia,
     escolaridade: req.body.escolaridade,
-    escolha: false
   });
 
   const familia_has_vaga = new Familia_has_vaga({
@@ -231,6 +231,9 @@ exports.criar_aupair = (req, res) => {
       experiencia: req.body.experiencia,
       natacao: req.body.natacao,
       habilitacao: req.body.habilitacao,
+      complemento: req.body.complemento,
+      habilitacao_pid: req.body.habilitacao_pid,
+      experiencia_trabalho: req.body.experiencia_trabalho,
     });
 
     aupair.aupair = req.userId;
