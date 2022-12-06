@@ -103,13 +103,9 @@ exports.vagas = async (req, res) => {
               score = score + 1
             }
           }
-          if (vagas[i].idioma != undefined && aupair.idioma != undefined) {
-            if (vagas[i].idioma.toString() === aupair.idioma.toString()) {
-              score = score + 1
-            }
-          }
 
-          vagas[i].score = (score * 100 / 8).toFixed(0).toString().concat("%")
+
+          vagas[i].score = (score * 100 / 7).toFixed(0).toString().concat("%")
         }
 
       }
