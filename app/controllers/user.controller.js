@@ -26,7 +26,7 @@ exports.moderatorBoard = (req, res) => {
 
 };
 
-exports.vagas = (req, res) => {
+exports.vagas = async (req, res) => {
   if (req.query.roles === "ROLE_FAMILY") {
     Vaga.find({ 'user': mongoose.Types.ObjectId(req.query.userID) })
       .exec((err, vaga) => {
@@ -39,86 +39,89 @@ exports.vagas = (req, res) => {
       )
   }
   else if (req.query.roles === "ROLE_AUPAIR") {
-    Vaga.find( { 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } } )
-      .exec((err, vagas) => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
+    await Aupair.findOne({ 'aupair.0': mongoose.Types.ObjectId(req.userId) }, (err, user) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+      req.aupair = user
 
-        if (!vagas) {
-          return res.status(404).send({ message: "Nenhuma Vaga não encontrada." });
-        }
-
-        for (let i = 0; i < vagas.length; i++) {
-          vagas[i].score = "0%"
-        }
-
-        var aupair = req.aupair
-
-        if(typeof aupair != "undefined" && aupair != null)
-        {
-          for (let i = 0; i < vagas.length; i++) {
-            score = 0
-            if (vagas[i].natacao != undefined && aupair.natacao != undefined) {
-              if (aupair.natacao.toString() === vagas[i].natacao.toString()) {
-                score = score + 1
-                console.log("natacao")
-              }
-            }
-            if (vagas[i].escolaridade != undefined && aupair.escolaridade != undefined) {
-              if (aupair.escolaridade.toString() === vagas[i].escolaridade.toString()) {
-                score = score + 1
-                console.log("escolaridade")
-              }
-            }
-            if (vagas[i].habilitacao != undefined && aupair.habilitacao != undefined) {
-              if (aupair.habilitacao.toString() === vagas[i].habilitacao.toString()) {
-                score = score + 1
-                console.log("habilitacao")
-              }
-            }
-            if (vagas[i].carro_exclusivo != undefined && aupair.carro_exclusivo != undefined) {
-              if (aupair.carro_exclusivo.toString() === vagas[i].carro_exclusivo.toString()) {
-                score = score + 1
-                console.log("carro_exclusivo")
-              }
-            }
-            if (vagas[i].quantidade_criancas != undefined && aupair.quantidade_criancas != undefined) {
-              if (vagas[i].quantidade_criancas.toString() === aupair.quantidade_criancas.toString()) {
-                score = score + 1
-                console.log("quantidade_criancas")
-              }
-            }
-            if (vagas[i].genero != undefined && aupair.genero != undefined) {
-              if (vagas[i].genero.toString() === aupair.genero.toString()) {
-                score = score + 1
-                console.log("genero")
-              }
-            }
-            if (vagas[i].nacionalidade != undefined && aupair.nacionalidade != undefined) {
-              if (vagas[i].nacionalidade.toString() === aupair.nacionalidade.toString()) {
-                score = score + 1
-                console.log("nacionalidade")
-              }
-            }
-            if (vagas[i].idioma != undefined && aupair.idioma != undefined) {
-              if (vagas[i].idioma.toString() === aupair.idioma.toString()) {
-                score = score + 1
-                console.log("idioma")
-              }
-            }
-
-            vagas[i].score = (score * 100 / 8).toFixed(0).toString().concat("%")
-          }
-
-        }
-
-        res.json(vagas);
-      });
+    })
 
   }
-};
+  await Vaga.find({ 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } })
+    .exec((err, vagas) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      if (!vagas) {
+        return res.status(404).send({ message: "Nenhuma Vaga não encontrada." });
+      }
+
+      for (let i = 0; i < vagas.length; i++) {
+        vagas[i].score = "0%"
+      }
+
+      var aupair = req.aupair
+
+      if (typeof aupair != "undefined" && aupair != null) {
+        for (let i = 0; i < vagas.length; i++) {
+          score = 0
+          if (vagas[i].natacao != undefined && aupair.natacao != undefined) {
+            if (aupair.natacao.toString() === vagas[i].natacao.toString()) {
+              score = score + 1
+
+            }
+          }
+          if (vagas[i].escolaridade != undefined && aupair.escolaridade != undefined) {
+            if (aupair.escolaridade.toString() === vagas[i].escolaridade.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].habilitacao != undefined && aupair.habilitacao != undefined) {
+            if (aupair.habilitacao.toString() === vagas[i].habilitacao.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].carro_exclusivo != undefined && aupair.carro_exclusivo != undefined) {
+            if (aupair.carro_exclusivo.toString() === vagas[i].carro_exclusivo.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].quantidade_criancas != undefined && aupair.quantidade_criancas != undefined) {
+            if (vagas[i].quantidade_criancas.toString() === aupair.quantidade_criancas.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].genero != undefined && aupair.genero != undefined) {
+            if (vagas[i].genero.toString() === aupair.genero.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].nacionalidade != undefined && aupair.nacionalidade != undefined) {
+            if (vagas[i].nacionalidade.toString() === aupair.nacionalidade.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].idioma != undefined && aupair.idioma != undefined) {
+            if (vagas[i].idioma.toString() === aupair.idioma.toString()) {
+              score = score + 1
+            }
+          }
+
+          vagas[i].score = (score * 100 / 8).toFixed(0).toString().concat("%")
+        }
+
+      }
+
+      res.json(vagas);
+
+    })
+
+}
+
 
 exports.vaga = (req, res) => {
   Vaga.findById(req.query.vagaID)
