@@ -12,7 +12,7 @@ const Aupair = mongoose.model(
     estado: String, 
     data_de_nascimento: Date,
     genero: String,
-    cpf: String,
+    numero_identificacao_nacional: String,
     nacionalidade: String,
     resumo: String,
     passaporte: String,
@@ -25,7 +25,8 @@ const Aupair = mongoose.model(
     receber_newsletter: Boolean,
     data_disponibilidade: Date,
     escolaridade: String,
-    idioma: String,
+    idiomas: Array,
+    religiao: Array,
     aupair: [
       {
         type: mongoose.Schema.Types.ObjectId,
