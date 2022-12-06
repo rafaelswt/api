@@ -47,9 +47,7 @@ exports.vagas = async (req, res) => {
       req.aupair = user
 
     })
-
-  }
-  await Vaga.find({ 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } })
+    await Vaga.find({ 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } })
     .exec((err, vagas) => {
       if (err) {
         res.status(500).send({ message: err });
@@ -119,6 +117,9 @@ exports.vagas = async (req, res) => {
       res.json(vagas);
 
     })
+
+  }
+  
 
 }
 
