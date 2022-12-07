@@ -26,22 +26,28 @@ exports.moderatorBoard = (req, res) => {
 
 };
 
-exports.vagas = (req, res) => {
-  if(req.query.roles  === "ROLE_FAMILY")
-  {
-    Vaga.find({'user':  mongoose.Types.ObjectId(req.query.userID)})
-    .exec((err, vaga) => {
+exports.vagas = async (req, res) => {
+  if (req.query.roles === "ROLE_FAMILY") {
+    Vaga.find({ 'user': mongoose.Types.ObjectId(req.query.userID) })
+      .exec((err, vaga) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
+        res.json(vaga);
+      }
+      )
+  }
+  else if (req.query.roles === "ROLE_AUPAIR") {
+    await Aupair.findOne({ 'aupair.0': mongoose.Types.ObjectId(req.userId) }, (err, user) => {
       if (err) {
         res.status(500).send({ message: err });
         return;
       }
-      res.json(vaga);
-    } 
-  )
-}
-  else if(req.query.roles === "ROLE_AUPAIR")
-  {
-    Vaga.find({$and: [{'aupair': {$ne : mongoose.Types.ObjectId(req.query.userID)}}, {"escolha" : 'false'} ]})
+      req.aupair = user
+
+    })
+    await Vaga.find({ 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } })
     .exec((err, vagas) => {
       if (err) {
         res.status(500).send({ message: err });
@@ -52,14 +58,70 @@ exports.vagas = (req, res) => {
         return res.status(404).send({ message: "Nenhuma Vaga não encontrada." });
       }
 
+      for (let i = 0; i < vagas.length; i++) {
+        vagas[i].score = "0%"
+      }
+
+      var aupair = req.aupair
+
+      if (typeof aupair != "undefined" && aupair != null) {
+        for (let i = 0; i < vagas.length; i++) {
+          score = 0
+          if (vagas[i].natacao != undefined && aupair.natacao != undefined) {
+            if (aupair.natacao.toString() === vagas[i].natacao.toString()) {
+              score = score + 1
+
+            }
+          }
+          if (vagas[i].escolaridade != undefined && aupair.escolaridade != undefined) {
+            if (aupair.escolaridade.toString() === vagas[i].escolaridade.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].habilitacao != undefined && aupair.habilitacao != undefined) {
+            if (aupair.habilitacao.toString() === vagas[i].habilitacao.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].carro_exclusivo != undefined && aupair.carro_exclusivo != undefined) {
+            if (aupair.carro_exclusivo.toString() === vagas[i].carro_exclusivo.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].quantidade_criancas != undefined && aupair.quantidade_criancas != undefined) {
+            if (vagas[i].quantidade_criancas.toString() === aupair.quantidade_criancas.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].genero != undefined && aupair.genero != undefined) {
+            if (vagas[i].genero.toString() === aupair.genero.toString()) {
+              score = score + 1
+            }
+          }
+          if (vagas[i].nacionalidade != undefined && aupair.nacionalidade != undefined) {
+            if (vagas[i].nacionalidade.toString() === aupair.nacionalidade.toString()) {
+              score = score + 1
+            }
+          }
+
+
+          vagas[i].score = (score * 100 / 7).toFixed(0).toString().concat("%")
+        }
+
+      }
+
       res.json(vagas);
-    });
+
+    })
 
   }
-};
+  
+
+}
+
 
 exports.vaga = (req, res) => {
-    Vaga.findById(req.query.vagaID)
+  Vaga.findById(req.query.vagaID)
     .exec((err, vaga) => {
       if (err) {
         res.status(500).send({ message: err });
@@ -75,79 +137,79 @@ exports.vaga = (req, res) => {
 }
 
 exports.candidaturas = (req, res) => {
-  if(req.query.roles  === "ROLE_FAMILY")
-  {
-    Vaga.find({   })
+  if (req.query.roles === "ROLE_FAMILY") {
+    Vaga.find({})
 
-    .exec((err, vaga) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
+      .exec((err, vaga) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
+
+        res.json(vaga);
       }
+      )
+  }
+  else if (req.query.roles === "ROLE_AUPAIR") {
+    Vaga.find({ 'aupair': mongoose.Types.ObjectId(req.query.userID) })
+      .exec((err, vaga) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
 
-      res.json(vaga);
-    } 
-  )
-}
-  else if(req.query.roles === "ROLE_AUPAIR")
-  {
-    Vaga.find({'aupair':  mongoose.Types.ObjectId(req.query.userID)})
-    .exec((err, vaga) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
-
-      if (!vaga) {
-        return res.status(404).send({ message: "Vaga não encontrada." });
-      }
+        if (!vaga) {
+          return res.status(404).send({ message: "Vaga não encontrada." });
+        }
 
 
-      res.json(vaga);
-    });
+        res.json(vaga);
+      });
 
   }
 };
 
 exports.criarvaga = (req, res) => {
   const vaga = new Vaga({
-    data_de_nascimento : req.body.data_de_nascimento,
     genero: req.body.genero,
     numero_identificacao_nacional: req.body.numero_identificacao_nacional,
     nacionalidade: req.body.nacionalidade,
     resumo: req.body.resumo,
+    idiomas: req.body.idiomas,
+    faixa_etaria : req.body.faixa_etaria,
+    religiao: req.body.religiao,
     passaporte: req.body.passaporte,
     habilitacao_pid: req.body.habilitacao_pid,
-    quantidade_criancas: req.body.filhos,
-    experiencia_trabalho: req.body.experiencia,
+    habilitacao: req.body.habilitacao,
+    quantidade_criancas: req.body.quantidade_criancas,
+    experiencia_trabalho: req.body.experiencia_trabalho,
     natacao: req.body.natacao,
     carro_exclusivo: req.body.carro_exclusivo,
     receber_newsletter: req.body.receber_newsletter,
-    data_disponibilidade : req.body.data_disponibilidade,
-    data_criacao_vaga : req.body.data_criacao_vaga,
-    data_finalizacao_vaga : req.body.data_finalizacao_vaga,
+    data_disponibilidade: req.body.data_disponibilidade,
+    data_criacao_vaga: req.body.data_criacao_vaga,
+    data_finalizacao_vaga: req.body.data_finalizacao_vaga,
     titulo_vaga: req.body.titulo_vaga,
     descricao: req.body.descricao,
     vaga_patrocinada: req.body.vaga_patrocinada,
     pais: req.body.pais,
     estado_provincia: req.body.estado_provincia,
     escolaridade: req.body.escolaridade,
-    escolha : false
   });
 
   const familia_has_vaga = new Familia_has_vaga({
-    vaga : vaga._id,
-    user: req.body.id
+    vaga: vaga._id,
+    user: req.userId
   });
   familia_has_vaga.save()
 
-  User.findOne({ id: req.body.id }, (err, user) => {
+  User.findOne({ id: req.userId }, (err, user) => {
     if (err) {
       res.status(500).send({ message: err });
       return;
     }
 
-    vaga.user = req.body.id;
+    vaga.user = req.userId;
     vaga.save(err => {
       if (err) {
         res.status(500).send({ message: err });
@@ -157,7 +219,7 @@ exports.criarvaga = (req, res) => {
       res.send({ message: "Vaga foi registrada com sucesso" });
     });
   })
-  
+
 };
 
 exports.criar_aupair = (req, res) => {
@@ -177,13 +239,12 @@ exports.criar_aupair = (req, res) => {
       logradouro: req.body.logradouro,
       numero: req.body.numero,
       cidade: req.body.cidade,
-      estado: req.body.estado, 
+      estado: req.body.estado,
       data_de_nascimento: req.body.data_de_nascimento,
       genero: req.body.genero,
-      cpf: req.body.cpf,
+      numero_identificacao_nacional: req.body.numero_identificacao_nacional,
       nacionalidade: req.body.nacionalidade,
       resumo: req.body.resumo,
-      idioma : req.body.idioma,
       passaporte: req.body.passaporte,
       quantidade_criancas: req.body.quantidade_criancas,
       carro_exclusivo: req.body.carro_exclusivo,
@@ -193,6 +254,11 @@ exports.criar_aupair = (req, res) => {
       experiencia: req.body.experiencia,
       natacao: req.body.natacao,
       habilitacao: req.body.habilitacao,
+      complemento: req.body.complemento,
+      habilitacao_pid: req.body.habilitacao_pid,
+      experiencia_trabalho: req.body.experiencia_trabalho,
+      idiomas: req.body.idiomas,
+      religiao: req.body.religiao,
     });
 
     aupair.aupair = req.userId;
@@ -205,11 +271,11 @@ exports.criar_aupair = (req, res) => {
       res.send({ message: "Perfil registrado com sucesso" });
     });
   })
-  
+
 };
 
 exports.aupair_profile = (req, res) => {
-  Aupair.findOne({'aupair.0': mongoose.Types.ObjectId(req.userId)})
+  Aupair.findOne({ 'aupair.0': mongoose.Types.ObjectId(req.userId) })
     .exec((err, user) => {
       if (err) {
         res.status(500).send({ message: err });
@@ -226,7 +292,7 @@ exports.aupair_profile = (req, res) => {
 };
 
 exports.aupair_profile_delete = (req, res) => {
-  Aupair.findOneAndDelete({'aupair.0': mongoose.Types.ObjectId(req.userId)})
+  Aupair.findOneAndDelete({ 'aupair.0': mongoose.Types.ObjectId(req.userId) })
     .exec((err, user) => {
       if (err) {
         res.status(500).send({ message: err });
@@ -243,124 +309,123 @@ exports.aupair_profile_delete = (req, res) => {
 
 
 exports.findMatches = (req, res) => {
-  if(req.query.roles  === "ROLE_FAMILY")
-  {
-    Vaga.find({ 'user.0': mongoose.Types.ObjectId(req.query.id), 'aupair' : { $ne : [] } })
-    .exec((err, vaga) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+  if (req.query.roles === "ROLE_FAMILY") {
+    Vaga.find({ 'user.0': mongoose.Types.ObjectId(req.query.id), 'aupair': { $ne: [] } })
+      .exec((err, vaga) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
 
-      if (!vaga) {
-        return res.status(404).send({ message: "Vaga Not found." });
-      }
+        if (!vaga) {
+          return res.status(404).send({ message: "Vaga Not found." });
+        }
 
-      res.json(vaga);
-    }); 
+        res.json(vaga);
+      });
   }
-  else if(req.query.roles === "ROLE_AUPAIR")
-  {
-    Vaga.find({'aupair.0': mongoose.Types.ObjectId(req.query.id)})
-    .exec((err, vaga) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+  else if (req.query.roles === "ROLE_AUPAIR") {
+    Vaga.find({ 'aupair.0': mongoose.Types.ObjectId(req.query.id) })
+      .exec((err, vaga) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
 
-      if (!vaga) {
-        return res.status(404).send({ message: "Vaga não encontrada." });
-      }
+        if (!vaga) {
+          return res.status(404).send({ message: "Vaga não encontrada." });
+        }
 
-      res.json(vaga);
-    });
+        res.json(vaga);
+      });
 
   }
 };
 
 exports.deleteVaga = (req, res) => {
   Vaga.findByIdAndDelete(req.query.vagaID)
-  .exec((err, vaga) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-
-    if (!vaga) {
-      return res.status(404).send({ message: "Vaga não encontrada." });
-    }
-
-    res.send({ message: "A vaga foi deletada com Sucesso" });
-  }); 
-
-}
-
-exports.deleteCandidatura = (req, res) => {
-  Candidatura.find({'vaga.0': mongoose.Types.ObjectId(req.query.vagaID)}).deleteOne().exec()
-  Vaga.findById(req.query.vagaID)
-  .exec((err, vaga) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-
-    vaga.escolha = false
-
-    vaga.aupair.pull(req.query.aupairID);
-    
-    vaga.save(err => {
+    .exec((err, vaga) => {
       if (err) {
         res.status(500).send({ message: err });
         return;
       }
 
-      res.send({ message: "Candidatura Deletada com sucesso" });
+      if (!vaga) {
+        return res.status(404).send({ message: "Vaga não encontrada." });
+      }
+
+      res.send({ message: "A vaga foi deletada com Sucesso" });
     });
-  }); 
+
+}
+
+exports.deleteCandidatura = (req, res) => {
+  Candidatura.find({ 'vaga.0': mongoose.Types.ObjectId(req.query.vagaID) }).deleteOne().exec()
+  Vaga.findById(req.query.vagaID)
+    .exec((err, vaga) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      vaga.escolha = false
+
+      vaga.aupair.pull(req.query.aupairID);
+
+      vaga.save(err => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
+
+        res.send({ message: "Candidatura Deletada com sucesso" });
+      });
+    });
 
 }
 
 exports.candidatarse = (req, res) => {
   const candidatura = new Candidatura({
     vaga: req.query.vagaID,
-    aupair: req.query.aupairID,
-    user: req.query.userID,
+    aupair: req.userId,
     escolha: false
   })
-    candidatura.save()
 
-    Vaga.findById(req.query.vagaID)
+  Vaga.findById(req.query.vagaID)
     .exec((err, vaga) => {
       if (err) {
         res.status(500).send({ message: err });
         return;
-      }   
-      
+      }
+
+      candidatura.user = vaga.user
+      candidatura.save()
+
       vaga.aupair.push(req.query.aupairID);
       vaga.save(err => {
         if (err) {
           res.status(500).send({ message: err });
           return;
         }
-  
+
         res.send({ message: "Candidatura Feita" });
       });
-      
-  
+
+
       if (!vaga) {
         return res.status(404).send({ message: "Vaga não encontrada." });
       }
-    }); 
-    
+    });
+
 };
 
 exports.match = (req, res) => {
-    Candidatura.findById(req.query.candidaturaID)
+  Candidatura.findById(req.query.candidaturaID)
     .exec((err, candidatura) => {
       if (err) {
         res.status(500).send({ message: err });
         return;
-      }   
+      }
       candidatura.escolha = true
 
       candidatura.save(err => {
@@ -368,22 +433,22 @@ exports.match = (req, res) => {
           res.status(500).send({ message: err });
           return;
         }
-  
+
         res.send({ message: "Match Feito" });
       });
-      
-  
+
+
       if (!candidatura) {
         return res.status(404).send({ message: "Candidatura não encontrada." });
       }
-    }); 
+    });
 
-    Vaga.findById(req.query.vagaID)
+  Vaga.findById(req.query.vagaID)
     .exec((err, vaga) => {
       if (err) {
         res.status(500).send({ message: err });
         return;
-      }   
+      }
 
       if (!vaga) {
         return res.status(404).send({ message: "Vaga não encontrada." });
@@ -396,15 +461,15 @@ exports.match = (req, res) => {
           return;
         }
       });
-      
 
-    }); 
-    
+
+    });
+
 };
 
 
 exports.getcandidaturas = (req, res) => {
-    Candidatura.find({$or: [{"user.0" : mongoose.Types.ObjectId(req.query.id)}, {"aupair.0" : mongoose.Types.ObjectId(req.query.id)} ]})
+  Candidatura.find({ $or: [{ "user.0": mongoose.Types.ObjectId(req.query.id) }, { "aupair.0": mongoose.Types.ObjectId(req.query.id) }] })
     .exec((err, candidatura) => {
       if (err) {
         res.status(500).send({ message: err });

@@ -104,4 +104,6 @@ module.exports = function(app) {
   app.delete(
     "/api/perfil/",[authJwt.verifyToken], controller.aupair_profile_delete
   );
+
+
 };
