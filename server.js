@@ -11,7 +11,7 @@ const app = express();
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 
 var corsOptions = {
-  origin: "*"
+  origin: "https://www.aupamatch.com/"
 };
 app.use(cors(corsOptions));
 
