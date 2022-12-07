@@ -9,7 +9,7 @@ const swaggerDocument = require("./swagger.json")
 
 const app = express()
 
-app.use(helmet.frameguard())
+app.use(helmet())
 
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 
