@@ -1,12 +1,17 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require('helmet')
 const dbConfig = require("./app/config/db.config");
 require('dotenv').config()
 
 const swaggerUI = require("swagger-ui-express")
 const swaggerDocument = require("./swagger.json")
 
-const app = express();
+const helmet = require('helmet')
+
+const app = express()
+
+app.use(helmet.frameguard())
 
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 
