@@ -13,14 +13,6 @@ app.use(helmet())
 
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 
-app.use(function (req, res, next) {
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self'; font-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; frame-src 'self'"
-  );
-  next();
-});
-
 var corsOptions = {
   origin: "*"
 };
