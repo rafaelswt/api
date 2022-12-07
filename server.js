@@ -7,8 +7,6 @@ require('dotenv').config()
 const swaggerUI = require("swagger-ui-express")
 const swaggerDocument = require("./swagger.json")
 
-const helmet = require('helmet')
-
 const app = express()
 
 app.use(helmet.frameguard())
