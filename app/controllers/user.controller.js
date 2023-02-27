@@ -259,6 +259,8 @@ exports.criar_aupair = (req, res) => {
       experiencia_trabalho: req.body.experiencia_trabalho,
       idiomas: req.body.idiomas,
       religiao: req.body.religiao,
+      notFirstLogin: true,
+
     });
 
     aupair.aupair = req.userId;
