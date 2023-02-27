@@ -63,12 +63,6 @@ module.exports = function(app) {
   );
 
   app.get(
-    "/api/favoritar",
-    [authJwt.verifyToken],
-    controller.favoritar
-  );
-
-  app.get(
     "/api/matches",
     [authJwt.verifyToken],
     controller.findMatches
@@ -109,6 +103,12 @@ module.exports = function(app) {
 
   app.delete(
     "/api/perfil/",[authJwt.verifyToken], controller.aupair_profile_delete
+  );
+
+  app.post(
+    "/api/favoritar",
+    [authJwt.verifyToken],
+    controller.favoritar
   );
 
 
