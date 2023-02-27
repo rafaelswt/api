@@ -506,4 +506,30 @@ exports.userprofile = (req, res) => {
     });
 };
 
+exports.favoritar = (req, res) => {
+  Vaga.findById(req.query.vagaID)
+    .exec((err, vaga) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      vaga.aupair.push(req.query.aupairID);
+      vaga.aupair.saved = true,
+      vaga.save(err => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
+
+        res.send({ message: "Candidatura Feita" });
+      });
+
+
+      if (!vaga) {
+        return res.status(404).send({ message: "Vaga não encontrada." });
+      }
+    });
+
+};
 

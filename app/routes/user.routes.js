@@ -63,6 +63,12 @@ module.exports = function(app) {
   );
 
   app.get(
+    "/api/favoritar",
+    [authJwt.verifyToken],
+    controller.favoritar
+  );
+
+  app.get(
     "/api/matches",
     [authJwt.verifyToken],
     controller.findMatches

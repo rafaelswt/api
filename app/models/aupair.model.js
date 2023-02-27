@@ -27,7 +27,7 @@ const Aupair = mongoose.model(
     escolaridade: String,
     idiomas: Array,
     religiao: Array,
-    notFirstLogin: false,
+    notFirstLogin: Boolean,
     aupair: [
       {
         type: mongoose.Schema.Types.ObjectId,

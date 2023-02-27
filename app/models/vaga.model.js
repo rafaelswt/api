@@ -37,6 +37,7 @@ const User = mongoose.model(
     aupair: [
       {
         type: mongoose.Schema.Types.ObjectId,
+        saved: Boolean,
         ref: "Aupair"
       }
     ]
