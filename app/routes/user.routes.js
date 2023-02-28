@@ -105,11 +105,15 @@ module.exports = function(app) {
     "/api/perfil/",[authJwt.verifyToken], controller.aupair_profile_delete
   );
 
+
   app.post(
-    "/api/favoritar",
+    "/api/favoritar/",
     [authJwt.verifyToken],
-    controller.favoritar
+    controller.favoritarVaga
   );
+
+  app.get('/api/aupair/:idAupair/vagas-salvas', [authJwt.verifyToken], controller.listarVagasSalvas);
+
 
 
 };

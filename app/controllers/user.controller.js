@@ -506,30 +506,49 @@ exports.userprofile = (req, res) => {
     });
 };
 
-exports.favoritar = (req, res) => {
-  Vaga.findById(req.query.vagaID)
-    .exec((err, vaga) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
-
-      vaga.aupair.push(req.query.aupairID);
-      vaga.aupair.saved = true,
-      vaga.save(err => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
-
-        res.send({ message: "Candidatura Feita" });
-      });
-
-
-      if (!vaga) {
-        return res.status(404).send({ message: "Vaga não encontrada." });
-      }
+exports.favoritarVaga = async (req, res) => {
+  try {
+    const { idVaga } = req.query;
+    const idAupair = req.userId;
+    
+    const vaga = await Vaga.findById(idVaga);
+    if (!vaga) {
+      return res.status(404).send({ message: "Vaga não encontrada." 
     });
+    }
 
+    const index = vaga.aupair.findIndex(aupair => aupair._id.toString() === idAupair);
+    if (index !== -1) {
+      vaga.aupair[index].saved = true;
+    } else {
+      vaga.aupair.push({ _id: idAupair, saved: true });
+    }
+
+    await vaga.save();
+
+    res.status(200).json({ message: "Vaga favoritada com sucesso" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
+
+exports.listarVagasSalvas = async (req, res) => {
+  try {
+    const idAupair = req.userId;
+
+    const vagas = await Vaga.find({
+      aupair: {
+        $elemMatch: {
+          _id: idAupair,
+          saved: true
+        }
+      }
+    }).populate("user", "nome email");
+
+    res.status(200).json(vagas);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
