@@ -95,38 +95,6 @@ exports.signup = (req, res) => {
   });
 };
 
-exports.vaga = (req, res) => {
-  const vaga = new Vaga({
-    escolaridade: req.body.escolaridade,
-    experiencia: req.body.experiencia,
-    filhos: req.body.filhos,
-    descricao: req.body.descricao,
-    natacao: req.body.natacao,
-    carro: req.body.carro,
-    habilitacao: req.body.habilitacao,
-    email: req.body.email,
-    id: req.body.id
-  });
-
-  User.findOne({ id: req.body.id }, (err, user) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-
-    vaga.user = req.body.id;
-    vaga.save(err => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
-
-      res.send({ message: "Vaga was registered successfully!" });
-    });
-  })
-  
-};
-
 exports.signin = (req, res) => {
   User.findOne({
     email: req.body.email
@@ -157,6 +125,8 @@ exports.signin = (req, res) => {
       var token = jwt.sign({ id: user.id }, config.secret, {
         expiresIn: 86400 // 24 hours
       });
+
+
 
       var authorities = [];
 
