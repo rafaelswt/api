@@ -9,6 +9,6 @@ db.user = require("./user.model");
 db.role = require("./role.model");
 db.vaga = require("./vaga.model")
 
-db.ROLES = ["user", "aupair", "family"];
+db.ROLES = ["user", "aupair", "family", "agency"];
 
 module.exports = db;

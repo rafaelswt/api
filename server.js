@@ -81,6 +81,16 @@ function initial() {
 
         console.log("added 'family' to roles collection");
       });
+
+      new Role({
+        name: "agency"
+      }).save(err => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'agency' to roles collection");
+      });
     }
   });
 }

@@ -70,7 +70,25 @@ exports.signup = (req, res) => {
             return;
           }
 
-          res.send({ message: "User was registered successfully!" });
+          res.send({ message: "Family was registered successfully!" });
+        });
+      });
+    }
+    else if (req.body.roles === "agency") {
+      Role.findOne({ name: "agency" }, (err, role) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
+
+        user.roles = [role._id];
+        user.save(err => {
+          if (err) {
+            res.status(500).send({ message: err });
+            return;
+          }
+
+          res.send({ message: "Agency was registered successfully!" });
         });
       });
     }
