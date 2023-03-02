@@ -15,6 +15,6 @@ db.religiao = require("./religiao.model")
 db.escolaridade = require("./escolaridade.model")
 db.familia_has_vaga = require("./familia_has_vaga.model")
 
-db.ROLES = ["user", "aupair", "family"];
+db.ROLES = ["user", "aupair", "family", "agency"];
 
 module.exports = db;
