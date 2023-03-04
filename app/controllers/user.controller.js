@@ -262,9 +262,7 @@ exports.criar_aupair = (req, res) => {
       habilitacao_pid: req.body.habilitacao_pid,
       experiencia_trabalho: req.body.experiencia_trabalho,
       idiomas: req.body.idiomas,
-      religiao: req.body.religiao,
-      notFirstLogin: true,
-
+      religiao: req.body.religiao
     });
 
     aupair.aupair = req.userId;
@@ -282,17 +280,19 @@ exports.criar_aupair = (req, res) => {
 
 exports.aupair_profile = (req, res) => {
   Aupair.findOne({ 'aupair.0': mongoose.Types.ObjectId(req.userId) })
-    .exec((err, user) => {
+    .exec((err, aupair) => {
       if (err) {
         res.status(500).send({ message: err });
         return;
       }
 
-      if (!user) {
-        return res.status(404).send({ message: "Aupair Not found." });
+      if (!aupair) {
+        const message = "Profile Not found.";
+        const firstLogin = true; // adiciona variável notFirstLogin como false
+        return res.status(404).send({ message, firstLogin }); // envia a variável notFirstLogin junto com a mensagem de erro
       }
 
-      res.json(user);
+      res.json(aupair);
 
     });
 };
