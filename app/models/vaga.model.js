@@ -28,6 +28,10 @@ const Vaga = mongoose.model(
     habilitacao: Boolean,
     carro_exclusivo: Boolean,
     score : String,
+    views: {
+      type: Number,
+      default: 0
+    },
     user: [
       {
         type: mongoose.Schema.Types.ObjectId,

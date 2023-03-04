@@ -47,7 +47,7 @@ exports.vagas = async (req, res) => {
       req.aupair = user
 
     })
-    await Vaga.find({ 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } })
+    await Vaga.find({ 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } }, )
     .exec((err, vagas) => {
       if (err) {
         res.status(500).send({ message: err });
@@ -58,8 +58,15 @@ exports.vagas = async (req, res) => {
         return res.status(404).send({ message: "Nenhuma Vaga não encontrada." });
       }
 
+      
+
       for (let i = 0; i < vagas.length; i++) {
         vagas[i].score = "0%"
+        // Increment the view count for each job listing
+        vagas[i].views += 1;
+        vagas[i].save(); // Save the updated job listing
+        
+
       }
 
       var aupair = req.aupair
@@ -103,8 +110,6 @@ exports.vagas = async (req, res) => {
               score = score + 1
             }
           }
-
-
           vagas[i].score = (score * 100 / 7).toFixed(0).toString().concat("%")
         }
 
@@ -115,7 +120,6 @@ exports.vagas = async (req, res) => {
     })
 
   }
-  
 
 }
 
