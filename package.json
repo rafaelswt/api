@@ -25,7 +25,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.1",
     "nodemon": "^2.0.20",
-    "swagger-ui-express": "^4.6.0"
+    "swagger-ui-express": "^4.6.2",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "react-csp": "^1.1.3"

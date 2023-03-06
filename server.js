@@ -3,15 +3,15 @@ const cors = require("cors");
 const helmet = require('helmet')
 const dbConfig = require("./app/config/db.config");
 require('dotenv').config()
-
-const swaggerUI = require("swagger-ui-express")
-const swaggerDocument = require("./swagger.json")
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./swagger.yaml');
 
 const app = express()
 
 app.use(helmet())
 
-app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 var corsOptions = {
   origin: "*"

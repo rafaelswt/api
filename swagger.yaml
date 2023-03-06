@@ -1,0 +1,119 @@
+openapi: 3.0.0
+info:
+  title: API de Autenticação
+  description: API de autenticação para um sistema de AuPair
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/auth
+paths:
+  /signup:
+    post:
+      summary: Registra um novo usuário
+      operationId: signup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: E-mail do usuário
+                password:
+                  type: string
+                  format: password
+                  description: Senha do usuário
+                name:
+                  type: string
+                  description: Nome do usuário
+                roles:
+                  type: string
+                  enum:
+                    - user
+                    - aupair
+                    - family
+                    - agency
+                  description: Papel do usuário
+              required:
+                - email
+                - password
+                - name
+                - roles
+      responses:
+        '200':
+          description: Usuário registrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de confirmação
+        '400':
+          description: Dados inválidos
+        '500':
+          description: Erro interno do servidor
+      security: []
+    x-middleware:
+      - name: checkDuplicateUsernameOrEmail
+        description: Verifica se já existe um usuário com o mesmo e-mail ou nome de usuário
+      - name: checkRolesExisted
+        description: Verifica se o papel especificado pelo usuário é válido
+  /signin:
+    post:
+      summary: Autentica um usuário
+      operationId: signin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: E-mail do usuário
+                password:
+                  type: string
+                  format: password
+                  description: Senha do usuário
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Autenticação realizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: ID do usuário
+                  email:
+                    type: string
+                    format: email
+                    description: E-mail do usuário
+                  name:
+                    type: string
+                    description: Nome do usuário
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                      description: Papel do usuário
+                  accessToken:
+                    type: string
+                    description: Token de acesso para o usuário
+        '401':
+          description: Credenciais inválidas
+        '404':
+          description: Usuário não encontrado
+        '500':
+          description: Erro interno do servidor
+      security: []
+components:
+  securitySchemes: {}
