@@ -11,43 +11,20 @@ module.exports = function(app) {
     next();
   });
 
-  app.get("/api/all", controller.allAccess);
-
-  app.get("/api/user", [authJwt.verifyToken], controller.userBoard);
-
-  app.get(
-    "/api/mod",
-    [authJwt.verifyToken, authJwt.isModerator],
-    controller.moderatorBoard
-  );
-
-  app.get(
-    "/api/admin",
-    [authJwt.verifyToken, authJwt.isAdmin],
-    controller.adminBoard
-  );
-
-
   app.get(
     "/api/vagas",
     [authJwt.verifyToken],
-    controller.vagas
-  );
-
-  app.get(
-    "/api/vaga",
-    [authJwt.verifyToken],
-    controller.vaga
+    controller.listarVagas
   );
 
   app.post(
     "/api/vaga",[authJwt.verifyToken], controller.criarvaga
   );
 
-  app.get(
-    "/api/del",
+  app.delete(
+    "/api/vaga/:id",
     [authJwt.verifyToken],
-    controller.deleteVaga
+    controller.deletarVaga
   );
 
   app.get(
@@ -55,6 +32,21 @@ module.exports = function(app) {
     [authJwt.verifyToken],
     controller.deleteCandidatura
   );
+
+
+  app.post(
+    "/api/perfil",[authJwt.verifyToken,
+      verifyAupairProfile.checkDuplicateProfile], controller.createAupairProfile
+  );
+
+  app.get(
+    "/api/perfil",[authJwt.verifyToken], controller.getAupairProfile
+  );
+
+  app.delete(
+    "/api/perfil/",[authJwt.verifyToken], controller.deleteAupairProfile
+  );
+
 
   app.get(
     "/api/candidatar",
@@ -92,18 +84,6 @@ module.exports = function(app) {
     controller.match
   );
 
-  app.post(
-    "/api/perfil",[authJwt.verifyToken,
-      verifyAupairProfile.checkDuplicateProfile], controller.criar_aupair
-  );
-
-  app.get(
-    "/api/perfil",[authJwt.verifyToken], controller.aupair_profile
-  );
-
-  app.delete(
-    "/api/perfil/",[authJwt.verifyToken], controller.aupair_profile_delete
-  );
 
 
   app.post(

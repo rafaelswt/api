@@ -5,6 +5,13 @@ info:
   version: 1.0.0
 servers:
   - url: http://localhost:8080/api/auth
+
+securityDefinitions:
+  JWT:
+    type: apiKey
+    name: x-access-token
+    in: header
+
 paths:
   /signup:
     post:
@@ -41,7 +48,7 @@ paths:
                 - name
                 - roles
       responses:
-        '200':
+        "200":
           description: Usuário registrado com sucesso
           content:
             application/json:
@@ -51,9 +58,9 @@ paths:
                   message:
                     type: string
                     description: Mensagem de confirmação
-        '400':
+        "400":
           description: Dados inválidos
-        '500':
+        "500":
           description: Erro interno do servidor
       security: []
     x-middleware:
@@ -83,7 +90,7 @@ paths:
                 - email
                 - password
       responses:
-        '200':
+        "200":
           description: Autenticação realizada com sucesso
           content:
             application/json:
@@ -108,12 +115,454 @@ paths:
                   accessToken:
                     type: string
                     description: Token de acesso para o usuário
-        '401':
+        "401":
           description: Credenciais inválidas
-        '404':
+        "404":
           description: Usuário não encontrado
-        '500':
+        "500":
           description: Erro interno do servidor
       security: []
+  /api/vagas:
+    get:
+      summary: "Listar vagas"
+      description: "Lista todas as vagas disponíveis para um usuário específico."
+      tags:
+        - "Vagas"
+      parameters:
+      - name: x-access-token
+        in: header
+        description: Token de autenticação
+        required: true
+        type: string
+      security:
+        - JWT: []
+      
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              example:
+                - _id: "640677f8096edf39d8759a09"
+                  escolaridade: "Graduação"
+                  idiomas: ["Qualquer Idioma"]
+                  religiao: "Qualquer Religião"
+                  genero: "Qualquer Gênero"
+                  nacionalidade: "Qualquer Nacionalidade"
+                  faixa_etaria: ["22-30"]
+                  experiencia_trabalho: "4-6"
+                  quantidade_criancas: "Não especificado"
+                  receber_newsletter: true
+                  data_disponibilidade: "2023-04-01T00:00:00.000Z"
+                  data_finalizacao_vaga: null
+                  titulo_vaga: "Au Pair em São Paulo"
+                  vaga_patrocinada: false
+                  pais: "Brasil"
+                  estado_provincia: "São Paulo"
+                  descricao: "Cuidar de crianças, ajudar com a rotina escolar e atividades extracurriculares, fazer refeições e atividades recreativas com as crianças"
+                  natacao: false
+                  habilitacao: true
+                  carro_exclusivo: false
+                  views: 6
+                  user: ["6400075f0e87cc0035ceceeb"]
+                  resumo: "Procuramos uma au pair para cuidar de nossos filhos durante a semana"
+                  passaporte: "123456789"
+                  aupair: []
+                  createdAt: "2023-03-06T23:32:08.784Z"
+                  updatedAt: "2023-03-07T00:06:26.162Z"
+                  __v: 0
+                  score: "42%"
+        403:
+          description: Acesso negado
+
+        404:
+          description: Nenhuma vaga encontrada
+
+        500:
+          description: Erro ao buscar vagas
+  /api/vaga:
+    post:
+      tags:
+        - Vaga
+      summary: Cria uma nova vaga
+      description: Cria uma nova vaga com base nos parâmetros informados
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Parâmetros para a criação da vaga
+          required: true
+          schema:
+            $ref: '#/definitions/Vaga'
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Vaga criada com sucesso
+          schema:
+            $ref: '#/definitions/Vaga'
+        '400':
+          description: Erro na requisição
+        '401':
+          description: Não autorizado
+        '403':
+          description: Token não fornecido
+      security:
+        - JWT: []
+  /vaga/{id}:
+    delete:
+      tags:
+        - Vaga
+      summary: Deletar uma vaga
+      description: Deleta uma vaga com base no ID passado como parâmetro
+      parameters:
+        - name: id
+          in: path
+          description: ID da vaga a ser deletada
+          required: true
+          type: string
+        - name: x-access-token
+          in: header
+          description: Token de autenticação JWT
+          required: true
+          type: string
+      responses:
+        200:
+          description: Vaga deletada com sucesso
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensagem de sucesso
+                example: Vaga deletada com sucesso
+        401:
+          description: Não autorizado
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensagem de erro
+                example: Unauthorized!
+        403:
+          description: Sem token fornecido
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensagem de erro
+                example: No token provided!
+        404:
+          description: Vaga não encontrada
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensagem de erro
+                example: Vaga não encontrada
+  /perfil:
+    post:
+      summary: Cria um perfil de Au Pair
+      tags:
+        - Perfil
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/Aupair'
+      responses:
+        '201':
+          description: Perfil criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Aupair'
+        '400':
+          description: Requisição inválida
+        '401':
+          description: Não autorizado
+        '403':
+          description: Token não fornecido
+        '500':
+          description: Erro do servidor
+    get:
+      summary: Recupera o perfil do Au Pair logado
+      tags:
+        - Perfil
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Retorna o perfil do Au Pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Aupair'
+        '401':
+          description: Não autorizado
+        '404':
+          description: Perfil não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Perfil não encontrado
+                  firstLogin:
+                    type: boolean
+                    example: true
+        '500':
+          description: Erro do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Server Error
+
+    delete:
+      summary: Exclui o perfil do usuário logado
+      tags:
+        - Perfil
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Perfil excluído com sucesso
+        '401':
+          description: Não autorizado
+        '403':
+          description: Token não fornecido
+        '404':
+          description: Perfil não encontrado
+      servers:
+        - url: http://localhost:3000
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: Mensagem opcional para inclusão no corpo da requisição
+
+
+definitions:
+  Vaga:
+    type: object
+    properties:
+      _id:
+        type: string
+      escolaridade:
+        type: string
+        enum:
+          - Qualquer Escolaridade
+          - Ensino Médio
+          - Graduação
+          - Pós-Graduação
+        default: Qualquer Escolaridade
+      idiomas:
+        type: array
+        items:
+          type: string
+        enum:
+          - Qualquer Idioma
+          - Inglês
+          - Espanhol
+          - Francês
+          - Alemão
+          - Italiano
+          - Português
+        default:
+          - Qualquer Idioma
+      religiao:
+        type: string
+        enum:
+          - Qualquer Religião
+          - Cristianismo
+          - Islamismo
+          - Judaísmo
+          - Budismo
+        default: Qualquer Religião
+      genero:
+        type: string
+        enum:
+          - Qualquer Gênero
+          - Masculino
+          - Feminino
+        default: Qualquer Gênero
+      nacionalidade:
+        type: string
+        enum:
+          - Qualquer Nacionalidade
+          - Brasileira
+          - Americana
+          - Espanhola
+          - Portuguesa
+          - Alemã
+          - Argentina
+          - Chinesa
+          - Japonesa
+        default: Qualquer Nacionalidade
+      faixa_etaria:
+        type: array
+        items:
+          type: string
+        enum:
+          - Qualquer Idade
+          - '18-21'
+          - '22-30'
+          - '31-40'
+          - '41-50'
+          - '51+'
+        default:
+          - Qualquer Idade
+      experiencia_trabalho:
+        type: string
+        enum:
+          - 0
+          - 1-3
+          - 4-6
+          - 7-10
+          - 10+
+        default: 0
+      quantidade_criancas:
+        type: string
+        enum:
+          - Não especificado
+          - 1
+          - 2
+          - 3 ou mais
+        default: Não especificado
+      numero_identificacao_nacional:
+        type: string
+      resumo:
+        type: string
+      passaporte:
+        type: string
+      receber_newsletter:
+        type: boolean
+        default: false
+      data_disponibilidade:
+        type: string
+        format: date-time
+        default: null
+      data_finalizacao_vaga:
+        type: string
+        format: date-time
+        default: null
+      titulo_vaga:
+        type: string
+        default: Vaga sem título
+      vaga_patrocinada:
+        type: boolean
+        default: false
+      pais:
+        type: string
+        default: ''
+      estado_provincia:
+        type: string
+        default: ''
+      descricao:
+        type: string
+        default: ''
+  
+  Aupair:
+    type: object
+    properties:
+      telefone:
+        type: string
+      cep:
+        type: string
+      logradouro:
+        type: string
+      numero:
+        type: string
+      complemento:
+        type: string
+      cidade:
+        type: string
+      estado:
+        type: string
+      data_de_nascimento:
+        type: string
+        format: date
+      escolaridade:
+        type: string
+        enum: ['Ensino Médio', 'Graduação', 'Pós-Graduação']
+      idiomas:
+        type: array
+        items:
+          type: string
+        enum: ['Inglês', 'Espanhol', 'Francês', 'Alemão', 'Italiano', 'Português', 'Outro']
+      religiao:
+        type: string
+        enum: ['Cristianismo', 'Islamismo', 'Judaísmo', 'Budismo', 'Outra']
+      genero:
+        type: string
+        enum: ['Masculino', 'Feminino', 'Outro']
+      nacionalidade:
+        type: string
+        enum: ['Brasileira', 'Americana', 'Espanhola', 'Portuguesa', 'Outra']
+      habilitacao:
+        type: boolean
+      quantidade_criancas:
+        type: string
+        enum: ['Não especificado', '1', '2', '3 ou mais']
+        default: 'Não especificado'
+      experiencia_trabalho:
+        type: string
+        enum: ['0', '1-3', '4-6', '7-10', '10+']
+        default: '0'
+      natacao:
+        type: boolean
+      carro_exclusivo:
+        type: boolean
+      receber_newsletter:
+        type: boolean
+      data_disponibilidade:
+        type: string
+        format: date
+      numero_identificacao_nacional:
+        type: string
+      resumo:
+        type: string
+      passaporte:
+        type: string
+      habilitacao_pid:
+        type: string
+
 components:
-  securitySchemes: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
