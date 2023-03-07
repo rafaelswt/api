@@ -26,9 +26,6 @@ app.use(express.urlencoded({ extended: true }));
 
 const db = require("./app/models");
 const Role = db.role;
-const Idioma = db.idioma;
-const Escolaridade = db.escolaridade;
-const Religiao = db.religiao;
 
 db.mongoose
   .connect(process.env.MONGODB_URI || `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`, {
