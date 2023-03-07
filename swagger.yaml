@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: API de Autenticação
-  description: API de autenticação para um sistema de AuPair
+  title: API Aupamatch
+  description: API para um sistema de AuPair
   version: 1.0.0
 servers:
   - url: http://localhost:8080/api/auth
@@ -409,7 +409,7 @@ paths:
           description: Erro interno do servidor
       security:
         - Bearer: []
-  /api/aupair/{idAupair}/vagas-salvas:
+  /api/aupair/vagas-salvas:
     get:
       summary: Lista as vagas salvas por um(a) au pair
       tags:
@@ -417,12 +417,6 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - in: path
-          name: idAupair
-          required: true
-          schema:
-            type: string
-          description: ID do(a) au pair
         - name: x-access-token
           in: header
           description: Token de autenticação

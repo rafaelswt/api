@@ -53,7 +53,7 @@ module.exports = function(app) {
     controller.favoritarVaga
   );
 
-  app.get('/api/aupair/:idAupair/vagas-salvas',
+  app.get('/api/aupair/vagas-salvas',
    [authJwt.verifyToken], 
    controller.listarVagasSalvas);
 
