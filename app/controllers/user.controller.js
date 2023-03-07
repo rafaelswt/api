@@ -471,10 +471,9 @@ exports.userprofile = (req, res) => {
 
 exports.favoritarVaga = async (req, res) => {
   try {
-    const { idVaga } = req.query;
     const idAupair = req.userId;
 
-    const vaga = await Vaga.findById(idVaga);
+    const vaga = await Vaga.findById(req.params.id);
     if (!vaga) {
       return res.status(404).send({
         message: "Vaga não encontrada."
@@ -483,6 +482,11 @@ exports.favoritarVaga = async (req, res) => {
 
     const index = vaga.aupair.findIndex(aupair => aupair._id.toString() === idAupair);
     if (index !== -1) {
+      if (vaga.aupair[index].saved) {
+        vaga.aupair[index].saved = false;
+        await vaga.save();
+        return res.status(200).json({ message: "Vaga desfavoritada com sucesso" });
+      }
       vaga.aupair[index].saved = true;
     } else {
       vaga.aupair.push({ _id: idAupair, saved: true });
@@ -495,6 +499,7 @@ exports.favoritarVaga = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.listarVagasSalvas = async (req, res) => {
   try {

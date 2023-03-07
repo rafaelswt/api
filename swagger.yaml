@@ -13,9 +13,11 @@ securityDefinitions:
     in: header
 
 paths:
-  /signup:
+  /api/signup:
     post:
       summary: Registra um novo usuário
+      tags:
+      - Auth
       operationId: signup
       requestBody:
         content:
@@ -68,9 +70,11 @@ paths:
         description: Verifica se já existe um usuário com o mesmo e-mail ou nome de usuário
       - name: checkRolesExisted
         description: Verifica se o papel especificado pelo usuário é válido
-  /signin:
+  /api/signin:
     post:
       summary: Autentica um usuário
+      tags:
+      - Auth
       operationId: signin
       requestBody:
         content:
@@ -127,7 +131,7 @@ paths:
       summary: "Listar vagas"
       description: "Lista todas as vagas disponíveis para um usuário específico."
       tags:
-        - "Vagas"
+        - "Listar Vagas"
       parameters:
       - name: x-access-token
         in: header
@@ -213,7 +217,7 @@ paths:
           description: Token não fornecido
       security:
         - JWT: []
-  /vaga/{id}:
+  /api/vaga/{id}:
     delete:
       tags:
         - Vaga
@@ -267,7 +271,7 @@ paths:
                 type: string
                 description: Mensagem de erro
                 example: Vaga não encontrada
-  /perfil:
+  /api/perfil:
     post:
       summary: Cria um perfil de Au Pair
       tags:
@@ -373,6 +377,100 @@ paths:
                 message:
                   type: string
                   description: Mensagem opcional para inclusão no corpo da requisição
+  /api/favoritar/{id}:
+    post:
+      summary: Favoritar uma vaga
+      tags:
+      - Favoritar
+      description: >
+        Adiciona ou remove a vaga com o ID especificado à lista de vagas favoritas do usuário autenticado.
+      operationId: favoritarVaga
+      parameters:
+        - name: id
+          in: path
+          description: ID da vaga a ser favoritada
+          required: true
+          type: string
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+      responses:
+        200:
+          description: Vaga favoritada com sucesso
+        401:
+          description: Token inválido ou expirado
+        403:
+          description: Token não fornecido
+        404:
+          description: Vaga não encontrada
+        500:
+          description: Erro interno do servidor
+      security:
+        - Bearer: []
+  /api/aupair/{idAupair}/vagas-salvas:
+    get:
+      summary: Lista as vagas salvas por um(a) au pair
+      tags:
+        - "Favoritar"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: idAupair
+          required: true
+          schema:
+            type: string
+          description: ID do(a) au pair
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              example:
+                - _id: "640677f8096edf39d8759a09"
+                  escolaridade: "Graduação"
+                  idiomas: ["Qualquer Idioma"]
+                  religiao: "Qualquer Religião"
+                  genero: "Qualquer Gênero"
+                  nacionalidade: "Qualquer Nacionalidade"
+                  faixa_etaria: ["22-30"]
+                  experiencia_trabalho: "4-6"
+                  quantidade_criancas: "Não especificado"
+                  receber_newsletter: true
+                  data_disponibilidade: "2023-04-01T00:00:00.000Z"
+                  data_finalizacao_vaga: null
+                  titulo_vaga: "Au Pair em São Paulo"
+                  vaga_patrocinada: false
+                  pais: "Brasil"
+                  estado_provincia: "São Paulo"
+                  descricao: "Cuidar de crianças, ajudar com a rotina escolar e atividades extracurriculares, fazer refeições e atividades recreativas com as crianças"
+                  natacao: false
+                  habilitacao: true
+                  carro_exclusivo: false
+                  views: 6
+                  user: ["6400075f0e87cc0035ceceeb"]
+                  resumo: "Procuramos uma au pair para cuidar de nossos filhos durante a semana"
+                  passaporte: "123456789"
+                  aupair: []
+                  createdAt: "2023-03-06T23:32:08.784Z"
+                  updatedAt: "2023-03-07T00:06:26.162Z"
+                  __v: 0
+                  score: "42%"
+        403:
+          description: Acesso negado
+
+        404:
+          description: Nenhuma vaga encontrada
+
+        500:
+          description: Erro ao buscar vagas
 
 
 definitions:

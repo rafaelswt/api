@@ -47,53 +47,22 @@ module.exports = function(app) {
     "/api/perfil/",[authJwt.verifyToken], controller.deleteAupairProfile
   );
 
+  app.post(
+    "/api/favoritar/:id",
+    [authJwt.verifyToken],
+    controller.favoritarVaga
+  );
+
+  app.get('/api/aupair/:idAupair/vagas-salvas',
+   [authJwt.verifyToken], 
+   controller.listarVagasSalvas);
+
 
   app.get(
     "/api/candidatar",
     [authJwt.verifyToken],
     controller.candidatarse
-  );
-
-  app.get(
-    "/api/matches",
-    [authJwt.verifyToken],
-    controller.findMatches
-  );
-
-  app.get(
-    "/api/candidaturas",
-    [authJwt.verifyToken],
-    controller.candidaturas
-  );
-
-  app.get(
-    "/api/userprofile",
-    [authJwt.verifyToken],
-    controller.userprofile
-  );
-
-  app.get(
-    "/api/getcandidaturas",
-    [authJwt.verifyToken],
-    controller.getcandidaturas
-  );
-
-  app.get(
-    "/api/match",
-    [authJwt.verifyToken],
-    controller.match
-  );
-
-
-
-  app.post(
-    "/api/favoritar/",
-    [authJwt.verifyToken],
-    controller.favoritarVaga
-  );
-
-  app.get('/api/aupair/:idAupair/vagas-salvas', [authJwt.verifyToken], controller.listarVagasSalvas);
-
+  )
 
 
 };
