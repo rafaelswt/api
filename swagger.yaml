@@ -4,7 +4,7 @@ info:
   description: API para um sistema de AuPair
   version: 1.0.0
 servers:
-  - url: http://localhost:8080/api/auth
+  - url: http://localhost:800
 
 securityDefinitions:
   JWT:
@@ -13,7 +13,7 @@ securityDefinitions:
     in: header
 
 paths:
-  /api/signup:
+  /auth/signup:
     post:
       summary: Registra um novo usuário
       tags:
@@ -70,7 +70,7 @@ paths:
         description: Verifica se já existe um usuário com o mesmo e-mail ou nome de usuário
       - name: checkRolesExisted
         description: Verifica se o papel especificado pelo usuário é válido
-  /api/signin:
+  /auth/signin:
     post:
       summary: Autentica um usuário
       tags:
@@ -126,7 +126,7 @@ paths:
         "500":
           description: Erro interno do servidor
       security: []
-  /api/vagas:
+  /vagas:
     get:
       summary: "Listar vagas"
       description: "Lista todas as vagas disponíveis para um usuário específico."
@@ -184,7 +184,7 @@ paths:
 
         500:
           description: Erro ao buscar vagas
-  /api/vaga:
+  /vaga:
     post:
       tags:
         - Vaga
@@ -217,7 +217,7 @@ paths:
           description: Token não fornecido
       security:
         - JWT: []
-  /api/vaga/{id}:
+  /vaga/{id}:
     delete:
       tags:
         - Vaga
@@ -271,7 +271,7 @@ paths:
                 type: string
                 description: Mensagem de erro
                 example: Vaga não encontrada
-  /api/perfil:
+  /perfil:
     post:
       summary: Cria um perfil de Au Pair
       tags:
@@ -377,7 +377,7 @@ paths:
                 message:
                   type: string
                   description: Mensagem opcional para inclusão no corpo da requisição
-  /api/favoritar/{id}:
+  /favoritar/{id}:
     post:
       summary: Favoritar uma vaga
       tags:
@@ -409,7 +409,7 @@ paths:
           description: Erro interno do servidor
       security:
         - Bearer: []
-  /api/aupair/vagas-salvas:
+  /aupair/vagas-salvas:
     get:
       summary: Lista as vagas salvas por um(a) au pair
       tags:
