@@ -596,6 +596,9 @@ definitions:
   Aupair:
     type: object
     properties:
+      firstLogin:
+        type: string
+        default: false
       telefone:
         type: string
       cep:
