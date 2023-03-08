@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require('helmet')
+const validator = require('validator');
 const dbConfig = require("./app/config/db.config");
 require('dotenv').config()
 const swaggerUi = require('swagger-ui-express');
