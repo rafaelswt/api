@@ -33,7 +33,6 @@ module.exports = function(app) {
     controller.deleteCandidatura
   );
 
-
   app.post(
     "/api/perfil",[authJwt.verifyToken,
       verifyAupairProfile.checkDuplicateProfile], controller.createAupairProfile
@@ -57,6 +56,9 @@ module.exports = function(app) {
    [authJwt.verifyToken], 
    controller.listarVagasSalvas);
 
+  app.get('/api/familia/minhas-vagas',
+   [authJwt.verifyToken], 
+   controller.listarMinhasVagas);
 
   app.get(
     "/api/candidatar",

@@ -189,7 +189,7 @@ paths:
   /vaga:
     post:
       tags:
-        - Vaga
+        - "Minhas vagas"
       summary: Cria uma nova vaga
       description: Cria uma nova vaga com base nos parâmetros informados
       produces:
@@ -222,7 +222,7 @@ paths:
   /vaga/{id}:
     delete:
       tags:
-        - Vaga
+        - "Minhas vagas"
       summary: Deletar uma vaga
       description: Deleta uma vaga com base no ID passado como parâmetro
       parameters:
@@ -467,7 +467,64 @@ paths:
 
         500:
           description: Erro ao buscar vagas
+  /familia/minhas-vagas:
+    get:
+      summary: "Retorna todas as vagas criadas pelo usuário atual."
+      description: "Lista todas as vagas criadas pelo usuário atual.."
+      tags:
+        - "Minhas vagas"
+      parameters:
+      - name: x-access-token
+        in: header
+        description: Token de autenticação
+        required: true
+        type: string
+      security:
+        - jwt: []
+      
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              example:
+                - _id: "640677f8096edf39d8759a09"
+                  escolaridade: "Graduação"
+                  idiomas: ["Qualquer Idioma"]
+                  religiao: "Qualquer Religião"
+                  genero: "Qualquer Gênero"
+                  nacionalidade: "Qualquer Nacionalidade"
+                  faixa_etaria: ["22-30"]
+                  experiencia_trabalho: "4-6"
+                  quantidade_criancas: "Não especificado"
+                  receber_newsletter: true
+                  data_disponibilidade: "2023-04-01T00:00:00.000Z"
+                  data_finalizacao_vaga: null
+                  titulo_vaga: "Au Pair em São Paulo"
+                  vaga_patrocinada: false
+                  pais: "Brasil"
+                  estado_provincia: "São Paulo"
+                  descricao: "Cuidar de crianças, ajudar com a rotina escolar e atividades extracurriculares, fazer refeições e atividades recreativas com as crianças"
+                  natacao: false
+                  habilitacao: true
+                  carro_exclusivo: false
+                  views: 6
+                  user: ["6400075f0e87cc0035ceceeb"]
+                  resumo: "Procuramos uma au pair para cuidar de nossos filhos durante a semana"
+                  passaporte: "123456789"
+                  aupair: []
+                  createdAt: "2023-03-06T23:32:08.784Z"
+                  updatedAt: "2023-03-07T00:06:26.162Z"
+                  __v: 0
+                  score: "42%"
+        403:
+          description: Acesso negado
 
+        404:
+          description: Nenhuma vaga encontrada
+
+        500:
+          description: Erro ao buscar vagas
 
 definitions:
   Vaga:

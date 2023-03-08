@@ -65,9 +65,6 @@ exports.listarVagas = async (req, res) => {
     res.status(500).json({ message: "Erro ao buscar vagas." });
   }
 }
-
-
-
 exports.vaga = (req, res) => {
   Vaga.findById(req.query.vagaID)
     .exec((err, vaga) => {
@@ -136,6 +133,12 @@ exports.criarvaga = async (req, res) => {
     // } else {
     //   idiomas = ["Não especificado"];
     // }
+
+    // Verifique se o usuário tem a função "ROLE_FAMILY"
+    if (!req.userRoles.includes("ROLE_FAMILY")) {
+      return res.status(403).json({ message: 'Você não tem permissão para criar uma vaga.' });
+    }
+
     
     const vaga = new Vaga({
       escolaridade: req.body.escolaridade,
@@ -450,25 +453,6 @@ exports.getcandidaturas = (req, res) => {
 
 };
 
-
-exports.userprofile = (req, res) => {
-  User.findById(req.query.userID
-  )
-    .exec((err, user) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
-
-      if (!user) {
-        return res.status(404).send({ message: "User Not found." });
-      }
-
-      res.json(user);
-
-    });
-};
-
 exports.favoritarVaga = async (req, res) => {
   try {
     const idAupair = req.userId;
@@ -500,7 +484,6 @@ exports.favoritarVaga = async (req, res) => {
   }
 };
 
-
 exports.listarVagasSalvas = async (req, res) => {
   try {
     const idAupair = req.userId;
@@ -517,6 +500,22 @@ exports.listarVagasSalvas = async (req, res) => {
     res.status(200).json(vagas);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+exports.listarMinhasVagas = async (req, res) => {
+
+  if (!req.userRoles.includes("ROLE_FAMILY")) {
+    return res.status(403).json({ message: 'Você não tem permissão para essa página.' });
+  }
+  try {
+    // Busca todas as vagas do usuário atual
+    const vagas = await Vaga.find({ user: req.userId }).populate("user", "name email");
+
+    res.status(200).send(vagas);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error retrieving user's jobs" });
   }
 };
 
