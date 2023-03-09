@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const Aupair = mongoose.model(
-  "Aupair",
+const AupairProfile = mongoose.model(
+  "AupairProfile",
   new mongoose.Schema({
     telefone: String,
     cep: String,
@@ -78,4 +78,4 @@ const Aupair = mongoose.model(
   })
 );
 
-module.exports = Aupair;
+module.exports = AupairProfile;

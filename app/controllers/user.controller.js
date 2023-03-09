@@ -6,8 +6,31 @@ const Vaga = db.vaga;
 const Candidatura = db.candidatura;
 const mongoose = require('mongoose');
 const Familia_has_vaga = db.familia_has_vaga;
-const Aupair = db.aupair;
+const AupairProfile = db.aupairProfile;
+const nodemailer = require("nodemailer");
 mongoose.Promise = global.Promise;
+
+async function calcularScore(vaga, aupair) {
+  const scoreFields = ["natacao", "escolaridade", "idiomas", "religiao", "habilitacao", "quantidade_criancas", "experiencia_trabalho", "genero", "nacionalidade", "carro_exclusivo", "receber_newsletter", "data_disponibilidade"];
+  let score = 0;
+
+  for (let j = 0; j < scoreFields.length; j++) {
+    if (vaga[scoreFields[j]] !== undefined && aupair[scoreFields[j]] !== undefined) {
+      if (Array.isArray(vaga[scoreFields[j]]) && Array.isArray(aupair[scoreFields[j]])) {
+        const intersection = vaga[scoreFields[j]].filter(value => aupair[scoreFields[j]].includes(value));
+        if (intersection.length > 0) {
+          score += intersection.length / aupair[scoreFields[j]].length;
+        }
+      } else {
+        if (vaga[scoreFields[j]].toString() === aupair[scoreFields[j]].toString()) {
+          score += 1;
+        }
+      }
+    }
+  }
+
+  return `${(score * 100 / scoreFields.length).toFixed(0)}%`;
+}
 
 exports.listarVagas = async (req, res) => {
   try {
@@ -23,38 +46,19 @@ exports.listarVagas = async (req, res) => {
         return res.status(404).json({ message: "Nenhuma vaga encontrada." });
       }
 
-      const aupair = await Aupair.findOne({ user: req.userId }).lean();
+      const aupair = await AupairProfile.findOne({ user: req.userId }).lean();
 
       if (!aupair) {
         return res.status(404).json({ message: "Perfil de Au Pair não encontrado." });
       }
 
-      const scoreFields = ["natacao", "escolaridade", "idiomas", "religiao", "habilitacao", "quantidade_criancas", "experiencia_trabalho", "genero", "nacionalidade", "carro_exclusivo", "receber_newsletter", "data_disponibilidade"];
-
       for (let i = 0; i < vagas.length; i++) {
         vagas[i].score = "0%";
         vagas[i].views += 1;
         await Vaga.updateOne({ _id: vagas[i]._id }, { $inc: { views: 1 } });
-        let score = 0;
-      
-        for (let j = 0; j < scoreFields.length; j++) {
-          if (vagas[i][scoreFields[j]] !== undefined && aupair[scoreFields[j]] !== undefined) {
-            if (Array.isArray(vagas[i][scoreFields[j]]) && Array.isArray(aupair[scoreFields[j]])) {
-              const intersection = vagas[i][scoreFields[j]].filter(value => aupair[scoreFields[j]].includes(value));
-              if (intersection.length > 0) {
-                score += intersection.length / aupair[scoreFields[j]].length;
-              }
-            } else {
-              if (vagas[i][scoreFields[j]].toString() === aupair[scoreFields[j]].toString()) {
-                score += 1;
-              }
-            }
-          }
-        }
-      
-        vagas[i].score = `${(score * 100 / scoreFields.length).toFixed(0)}%`;
+
+        vagas[i].score = await calcularScore(vagas[i], aupair);
       }
-      
 
       return res.json(vagas);
     }
@@ -65,6 +69,10 @@ exports.listarVagas = async (req, res) => {
     res.status(500).json({ message: "Erro ao buscar vagas." });
   }
 }
+
+
+
+
 exports.vaga = (req, res) => {
   Vaga.findById(req.query.vagaID)
     .exec((err, vaga) => {
@@ -208,7 +216,7 @@ exports.createAupairProfile = async (req, res) => {
       data_disponibilidade,
     } = req.body;
 
-    const newAupair = new Aupair({
+    const newAupair = new AupairProfile({
       telefone,
       cep,
       logradouro,
@@ -248,7 +256,7 @@ exports.createAupairProfile = async (req, res) => {
 
 exports.getAupairProfile = async (req, res) => {
   try {
-    const aupair = await Aupair.findOne({ 'user.0': mongoose.Types.ObjectId(req.userId) });
+    const aupair = await AupairProfile.findOne({ 'user.0': mongoose.Types.ObjectId(req.userId) });
 
     if (!aupair) {
       return res.status(404).json({ message: "Perfil não encontrado", firstLogin: true });
@@ -263,7 +271,7 @@ exports.getAupairProfile = async (req, res) => {
 
 exports.deleteAupairProfile = async (req, res) => {
   try {
-    const deletedAupair = await Aupair.findOneAndDelete({ "user.0": req.userId });
+    const deletedAupair = await AupairProfile.findOneAndDelete({ "user.0": req.userId });
 
     if (!deletedAupair) {
       return res.status(404).json({ message: "Perfil não encontrado" });
@@ -519,4 +527,35 @@ exports.listarMinhasVagas = async (req, res) => {
   }
 };
 
+exports.emailSend = async (req, res) => {
+  try {
+    // Dados do servidor SMTP e credenciais de autenticação
+    let transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
 
+    // Dados do email a ser enviado
+    let mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: 'ribeiro.santos@aluno.ifsp.edu.br',
+      subject: 'Assunto do email',
+      text: 'Conteúdo do email em texto simples',
+      html: '<p>Conteúdo do email em HTML</p>'
+    };
+
+    // Enviar o email
+    let info = await transporter.sendMail(mailOptions);
+
+    console.log('Email enviado: ' + info.response);
+    return res.status(200).json({ message: 'Email enviado com sucesso.' });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Erro ao enviar email.' });
+  }
+}

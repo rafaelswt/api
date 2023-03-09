@@ -1,6 +1,5 @@
 const { authJwt, verifySignUp } = require("../middlewares");
 const controller = require("../controllers/user.controller");
-const verifyAupairProfile = require("../middlewares/verifyAupairProfile");
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -34,8 +33,7 @@ module.exports = function(app) {
   );
 
   app.post(
-    "/api/perfil",[authJwt.verifyToken,
-      verifyAupairProfile.checkDuplicateProfile], controller.createAupairProfile
+    "/api/perfil",[authJwt.verifyToken], controller.createAupairProfile
   );
 
   app.get(
@@ -65,6 +63,8 @@ module.exports = function(app) {
     [authJwt.verifyToken],
     controller.candidatarse
   )
+
+  
 
 
 };
