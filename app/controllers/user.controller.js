@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const Familia_has_vaga = db.familia_has_vaga;
 const AupairProfile = db.aupairProfile;
 mongoose.Promise = global.Promise;
+const nodemailer = require("nodemailer");
 
 async function calcularScore(vaga, aupair) {
   const scoreFields = ["natacao", "escolaridade", "idiomas", "religiao", "habilitacao", "quantidade_criancas", "experiencia_trabalho", "genero", "nacionalidade", "carro_exclusivo", "receber_newsletter", "data_disponibilidade"];
@@ -143,7 +144,7 @@ exports.criarvaga = async (req, res) => {
       return res.status(403).json({ message: 'Você não tem permissão para criar uma vaga.' });
     }
 
-    
+
     const vaga = new Vaga({
       escolaridade: req.body.escolaridade,
       idiomas: req.body.idiomas,
@@ -237,7 +238,7 @@ exports.createAupairProfile = async (req, res) => {
       carro_exclusivo,
       receber_newsletter,
       data_disponibilidade,
-      user : req.userId
+      user: req.userId
     });
 
     const savedAupair = await newAupair.save();
@@ -518,5 +519,78 @@ exports.listarMinhasVagas = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error retrieving user's jobs" });
+  }
+};
+
+exports.SendEmail = async (req, res) => {
+  try {
+    // Configurar o transporter do nodemailer
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Obter todos os perfis de Au pair
+    const aupairs = await AupairProfile.find();
+
+    // Obter todas as vagas
+    const vagas = await Vaga.find();
+
+    // Iterar sobre cada perfil de Au pair
+    for (let i = 0; i < aupairs.length; i++) {
+      const aupair = aupairs[i];
+
+      // Buscar o usuário completo do Au pair
+      const user = await User.findById(aupair.user).populate("roles");
+
+      // Obter as vagas com as melhores pontuações para o perfil de Au pair atual
+      const vagasOrdenadas = vagas
+        .map((vaga) => ({
+          vaga,
+          score: calcularScore(vaga, aupair),
+        }))
+        .sort((a, b) => b.score - a.score);
+
+      // Enviar um e-mail com as três vagas com melhores pontuações
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Vagas de Au pair da semana",
+        html: `
+          <p>Olá ${user.name}, aqui estão as três melhores vagas de Au pair da semana:</p>
+          <ul>
+          ${vagasOrdenadas
+            .slice(0, 3)
+            .map(({ vaga }) => `
+              <li>
+                <p><strong>${vaga.titulo_vaga}</strong></p>
+                <p>${vaga.descricao}</p>
+                <ul>
+                  <li>Escolaridade: ${vaga.escolaridade}</li>
+                  <li>Idiomas: ${vaga.idiomas.join(", ")}</li>
+                  <li>Religião: ${vaga.religiao}</li>
+                  <li>Gênero: ${vaga.genero}</li>
+                  <li>Nacionalidade: ${vaga.nacionalidade}</li>
+                  <li>Faixa Etária: ${vaga.faixa_etaria.join(", ")}</li>
+                  <li>Experiência de Trabalho: ${vaga.experiencia_trabalho}</li>
+                  <li>Quantidade de Crianças: ${vaga.quantidade_criancas}</li>
+                  <li>Natação: ${vaga.natacao ? "Sim" : "Não"}</li>
+                  <li>Habilitação: ${vaga.habilitacao ? "Sim" : "Não"}</li>
+                </ul>
+              </li>
+            `)
+            .join("")}
+          </ul>
+        `,
+      });
+    }
+
+    res.status(200).json({ message: "E-mails enviados com sucesso" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao enviar e-mails" });
   }
 };
