@@ -7,7 +7,6 @@ const Candidatura = db.candidatura;
 const mongoose = require('mongoose');
 const Familia_has_vaga = db.familia_has_vaga;
 const AupairProfile = db.aupairProfile;
-const nodemailer = require("nodemailer");
 mongoose.Promise = global.Promise;
 
 async function calcularScore(vaga, aupair) {
@@ -69,9 +68,6 @@ exports.listarVagas = async (req, res) => {
     res.status(500).json({ message: "Erro ao buscar vagas." });
   }
 }
-
-
-
 
 exports.vaga = (req, res) => {
   Vaga.findById(req.query.vagaID)
@@ -253,7 +249,6 @@ exports.createAupairProfile = async (req, res) => {
   }
 };
 
-
 exports.getAupairProfile = async (req, res) => {
   try {
     const aupair = await AupairProfile.findOne({ 'user.0': mongoose.Types.ObjectId(req.userId) });
@@ -283,7 +278,6 @@ exports.deleteAupairProfile = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
-
 
 exports.findMatches = (req, res) => {
   if (req.query.roles === "ROLE_FAMILY") {
@@ -526,36 +520,3 @@ exports.listarMinhasVagas = async (req, res) => {
     res.status(500).send({ message: "Error retrieving user's jobs" });
   }
 };
-
-exports.emailSend = async (req, res) => {
-  try {
-    // Dados do servidor SMTP e credenciais de autenticação
-    let transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
-    // Dados do email a ser enviado
-    let mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: 'ribeiro.santos@aluno.ifsp.edu.br',
-      subject: 'Assunto do email',
-      text: 'Conteúdo do email em texto simples',
-      html: '<p>Conteúdo do email em HTML</p>'
-    };
-
-    // Enviar o email
-    let info = await transporter.sendMail(mailOptions);
-
-    console.log('Email enviado: ' + info.response);
-    return res.status(200).json({ message: 'Email enviado com sucesso.' });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: 'Erro ao enviar email.' });
-  }
-}
