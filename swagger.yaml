@@ -95,6 +95,11 @@ paths:
               required:
                 - email
                 - password
+            examples:
+              example1:
+                value:
+                  email: "rafael-aupair@aupair.com"
+                  password: "Teste123@"
       responses:
         "200":
           description: Autenticação realizada com sucesso
