@@ -63,4 +63,10 @@ module.exports = function(app) {
     [authJwt.verifyToken],
     controller.candidatarse
   )
+
+  app.get(
+    "/api/userprofile",
+    [authJwt.verifyToken],
+    controller.userprofile
+  );
 };

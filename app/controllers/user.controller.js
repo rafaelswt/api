@@ -598,3 +598,21 @@ exports.SendEmail = async (req, res) => {
     res.status(500).json({ message: "Erro ao enviar e-mails" });
   }
 };
+
+exports.userprofile = (req, res) => {
+  User.findById(req.userId
+  )
+    .exec((err, user) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      if (!user) {
+        return res.status(404).send({ message: "User Not found." });
+      }
+
+      res.json(user);
+
+    });
+};
