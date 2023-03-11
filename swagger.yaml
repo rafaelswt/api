@@ -4,7 +4,7 @@ info:
   description: API para um sistema de AuPair
   version: 1.0.0
 servers:
-  - url: https://aupamatch-api3.render.com/api
+  - url: https://aupamatch-api3.onrender.com/api
 
 securityDefinitions:
   jwt:
