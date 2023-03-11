@@ -10,7 +10,12 @@ const swaggerDocument = YAML.load('./swagger.yaml');
 
 const app = express()
 
-app.use(helmet())
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    connectSrc: ["'self'", "http://localhost:8080/api/vagas"]
+  }
+}));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
