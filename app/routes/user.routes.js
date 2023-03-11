@@ -1,6 +1,5 @@
 const { authJwt, verifySignUp } = require("../middlewares");
 const controller = require("../controllers/user.controller");
-const verifyAupairProfile = require("../middlewares/verifyAupairProfile");
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -11,43 +10,20 @@ module.exports = function(app) {
     next();
   });
 
-  app.get("/api/all", controller.allAccess);
-
-  app.get("/api/user", [authJwt.verifyToken], controller.userBoard);
-
-  app.get(
-    "/api/mod",
-    [authJwt.verifyToken, authJwt.isModerator],
-    controller.moderatorBoard
-  );
-
-  app.get(
-    "/api/admin",
-    [authJwt.verifyToken, authJwt.isAdmin],
-    controller.adminBoard
-  );
-
-
   app.get(
     "/api/vagas",
     [authJwt.verifyToken],
-    controller.vagas
-  );
-
-  app.get(
-    "/api/vaga",
-    [authJwt.verifyToken],
-    controller.vaga
+    controller.listarVagas
   );
 
   app.post(
     "/api/vaga",[authJwt.verifyToken], controller.criarvaga
   );
 
-  app.get(
-    "/api/del",
+  app.delete(
+    "/api/vaga/:id",
     [authJwt.verifyToken],
-    controller.deleteVaga
+    controller.deletarVaga
   );
 
   app.get(
@@ -56,54 +32,35 @@ module.exports = function(app) {
     controller.deleteCandidatura
   );
 
+  app.post(
+    "/api/perfil",[authJwt.verifyToken], controller.createAupairProfile
+  );
+
+  app.get(
+    "/api/perfil",[authJwt.verifyToken], controller.getAupairProfile
+  );
+
+  app.delete(
+    "/api/perfil/",[authJwt.verifyToken], controller.deleteAupairProfile
+  );
+
+  app.post(
+    "/api/favoritar/:id",
+    [authJwt.verifyToken],
+    controller.favoritarVaga
+  );
+
+  app.get('/api/aupair/vagas-salvas',
+   [authJwt.verifyToken], 
+   controller.listarVagasSalvas);
+
+  app.get('/api/familia/minhas-vagas',
+   [authJwt.verifyToken], 
+   controller.listarMinhasVagas);
+
   app.get(
     "/api/candidatar",
     [authJwt.verifyToken],
     controller.candidatarse
-  );
-
-  app.get(
-    "/api/matches",
-    [authJwt.verifyToken],
-    controller.findMatches
-  );
-
-  app.get(
-    "/api/candidaturas",
-    [authJwt.verifyToken],
-    controller.candidaturas
-  );
-
-  app.get(
-    "/api/userprofile",
-    [authJwt.verifyToken],
-    controller.userprofile
-  );
-
-  app.get(
-    "/api/getcandidaturas",
-    [authJwt.verifyToken],
-    controller.getcandidaturas
-  );
-
-  app.get(
-    "/api/match",
-    [authJwt.verifyToken],
-    controller.match
-  );
-
-  app.post(
-    "/api/perfil",[authJwt.verifyToken,
-      verifyAupairProfile.checkDuplicateProfile], controller.criar_aupair
-  );
-
-  app.get(
-    "/api/perfil",[authJwt.verifyToken], controller.aupair_profile
-  );
-
-  app.delete(
-    "/api/perfil/",[authJwt.verifyToken], controller.aupair_profile_delete
-  );
-
-
+  )
 };

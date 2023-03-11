@@ -6,119 +6,69 @@ const Vaga = db.vaga;
 const Candidatura = db.candidatura;
 const mongoose = require('mongoose');
 const Familia_has_vaga = db.familia_has_vaga;
-const Aupair = db.aupair;
+const AupairProfile = db.aupairProfile;
 mongoose.Promise = global.Promise;
+const nodemailer = require("nodemailer");
 
-exports.allAccess = (req, res) => {
-  res.status(200).send("Public Content.");
-};
+async function calcularScore(vaga, aupair) {
+  const scoreFields = ["natacao", "escolaridade", "idiomas", "religiao", "habilitacao", "quantidade_criancas", "experiencia_trabalho", "genero", "nacionalidade", "carro_exclusivo", "receber_newsletter", "data_disponibilidade"];
+  let score = 0;
 
-exports.userBoard = (req, res) => {
-  res.status(200).send("User Content.");
-};
-
-exports.adminBoard = (req, res) => {
-  res.status(200).send("Admin Content.");
-};
-
-exports.moderatorBoard = (req, res) => {
-  res.status(200).send("Moderator Content.");
-
-};
-
-exports.vagas = async (req, res) => {
-  if (req.query.roles === "ROLE_FAMILY") {
-    Vaga.find({ 'user': mongoose.Types.ObjectId(req.query.userID) })
-      .exec((err, vaga) => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
+  for (let j = 0; j < scoreFields.length; j++) {
+    if (vaga[scoreFields[j]] !== undefined && aupair[scoreFields[j]] !== undefined) {
+      if (Array.isArray(vaga[scoreFields[j]]) && Array.isArray(aupair[scoreFields[j]])) {
+        const intersection = vaga[scoreFields[j]].filter(value => aupair[scoreFields[j]].includes(value));
+        if (intersection.length > 0) {
+          score += intersection.length / aupair[scoreFields[j]].length;
         }
-        res.json(vaga);
+      } else {
+        if (vaga[scoreFields[j]].toString() === aupair[scoreFields[j]].toString()) {
+          score += 1;
+        }
       }
-      )
+    }
   }
-  else if (req.query.roles === "ROLE_AUPAIR") {
-    await Aupair.findOne({ 'aupair.0': mongoose.Types.ObjectId(req.userId) }, (err, user) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
-      req.aupair = user
 
-    })
-    await Vaga.find({ 'aupair': { $ne: mongoose.Types.ObjectId(req.userId) } })
-    .exec((err, vagas) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+  return `${(score * 100 / scoreFields.length).toFixed(0)}%`;
+}
+
+exports.listarVagas = async (req, res) => {
+  try {
+    if (req.userRoles.includes("ROLE_FAMILY")) {
+      const vagas = await Vaga.find({ user: mongoose.Types.ObjectId(req.userId) }).lean();
+      return res.json(vagas);
+    }
+
+    if (req.userRoles.includes("ROLE_AUPAIR")) {
+      const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } }).lean();
 
       if (!vagas) {
-        return res.status(404).send({ message: "Nenhuma Vaga não encontrada." });
+        return res.status(404).json({ message: "Nenhuma vaga encontrada." });
+      }
+
+      const aupair = await AupairProfile.findOne({ user: req.userId }).lean();
+
+      if (!aupair) {
+        return res.status(404).json({ message: "Perfil de Au Pair não encontrado." });
       }
 
       for (let i = 0; i < vagas.length; i++) {
-        vagas[i].score = "0%"
+        vagas[i].score = "0%";
+        vagas[i].views += 1;
+        await Vaga.updateOne({ _id: vagas[i]._id }, { $inc: { views: 1 } });
+
+        vagas[i].score = await calcularScore(vagas[i], aupair);
       }
 
-      var aupair = req.aupair
+      return res.json(vagas);
+    }
 
-      if (typeof aupair != "undefined" && aupair != null) {
-        for (let i = 0; i < vagas.length; i++) {
-          score = 0
-          if (vagas[i].natacao != undefined && aupair.natacao != undefined) {
-            if (aupair.natacao.toString() === vagas[i].natacao.toString()) {
-              score = score + 1
-
-            }
-          }
-          if (vagas[i].escolaridade != undefined && aupair.escolaridade != undefined) {
-            if (aupair.escolaridade.toString() === vagas[i].escolaridade.toString()) {
-              score = score + 1
-            }
-          }
-          if (vagas[i].habilitacao != undefined && aupair.habilitacao != undefined) {
-            if (aupair.habilitacao.toString() === vagas[i].habilitacao.toString()) {
-              score = score + 1
-            }
-          }
-          if (vagas[i].carro_exclusivo != undefined && aupair.carro_exclusivo != undefined) {
-            if (aupair.carro_exclusivo.toString() === vagas[i].carro_exclusivo.toString()) {
-              score = score + 1
-            }
-          }
-          if (vagas[i].quantidade_criancas != undefined && aupair.quantidade_criancas != undefined) {
-            if (vagas[i].quantidade_criancas.toString() === aupair.quantidade_criancas.toString()) {
-              score = score + 1
-            }
-          }
-          if (vagas[i].genero != undefined && aupair.genero != undefined) {
-            if (vagas[i].genero.toString() === aupair.genero.toString()) {
-              score = score + 1
-            }
-          }
-          if (vagas[i].nacionalidade != undefined && aupair.nacionalidade != undefined) {
-            if (vagas[i].nacionalidade.toString() === aupair.nacionalidade.toString()) {
-              score = score + 1
-            }
-          }
-
-
-          vagas[i].score = (score * 100 / 7).toFixed(0).toString().concat("%")
-        }
-
-      }
-
-      res.json(vagas);
-
-    })
-
+    return res.status(403).json({ message: "Acesso negado." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao buscar vagas." });
   }
-  
-
 }
-
 
 exports.vaga = (req, res) => {
   Vaga.findById(req.query.vagaID)
@@ -169,144 +119,166 @@ exports.candidaturas = (req, res) => {
   }
 };
 
-exports.criarvaga = (req, res) => {
-  const vaga = new Vaga({
-    genero: req.body.genero,
-    numero_identificacao_nacional: req.body.numero_identificacao_nacional,
-    nacionalidade: req.body.nacionalidade,
-    resumo: req.body.resumo,
-    idiomas: req.body.idiomas,
-    faixa_etaria : req.body.faixa_etaria,
-    religiao: req.body.religiao,
-    passaporte: req.body.passaporte,
-    habilitacao_pid: req.body.habilitacao_pid,
-    habilitacao: req.body.habilitacao,
-    quantidade_criancas: req.body.quantidade_criancas,
-    experiencia_trabalho: req.body.experiencia_trabalho,
-    natacao: req.body.natacao,
-    carro_exclusivo: req.body.carro_exclusivo,
-    receber_newsletter: req.body.receber_newsletter,
-    data_disponibilidade: req.body.data_disponibilidade,
-    data_criacao_vaga: req.body.data_criacao_vaga,
-    data_finalizacao_vaga: req.body.data_finalizacao_vaga,
-    titulo_vaga: req.body.titulo_vaga,
-    descricao: req.body.descricao,
-    vaga_patrocinada: req.body.vaga_patrocinada,
-    pais: req.body.pais,
-    estado_provincia: req.body.estado_provincia,
-    escolaridade: req.body.escolaridade,
-  });
+exports.criarvaga = async (req, res) => {
+  try {
+    // // Verifica se o usuário já possui uma vaga cadastrada
+    // const vagaExistente = await Vaga.findOne({ user: req.userId });
+    // if (vagaExistente) {
+    //   return res.status(400).json({ message: 'Usuário já possui uma vaga cadastrada.' });
+    // }
 
-  const familia_has_vaga = new Familia_has_vaga({
-    vaga: vaga._id,
-    user: req.userId
-  });
-  familia_has_vaga.save()
 
-  User.findOne({ id: req.userId }, (err, user) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
+    // // Verifica se o o dado passo é permitido
+    // const idiomasPermitidos = ["Inglês", "Espanhol", "Francês", "Alemão", "Italiano", "Português"];
+
+    // let idiomas;
+
+    // if (req.body.idiomas && idiomasPermitidos.includes(req.body.idiomas)) {
+    //   idiomas = req.body.idiomas;
+    // } else {
+    //   idiomas = ["Não especificado"];
+    // }
+
+    // Verifique se o usuário tem a função "ROLE_FAMILY"
+    if (!req.userRoles.includes("ROLE_FAMILY")) {
+      return res.status(403).json({ message: 'Você não tem permissão para criar uma vaga.' });
     }
 
-    vaga.user = req.userId;
-    vaga.save(err => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
 
-      res.send({ message: "Vaga foi registrada com sucesso" });
-    });
-  })
-
-};
-
-exports.criar_aupair = (req, res) => {
-  User.findOne({ "_id": mongoose.Types.ObjectId(req.userId) }, (err, user) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-
-    if (!user) {
-      return res.status(404).send({ message: "Usuário não encontrado." });
-    }
-
-    const aupair = new Aupair({
-      telefone: req.body.telefone,
-      cep: req.body.cep,
-      logradouro: req.body.logradouro,
-      numero: req.body.numero,
-      cidade: req.body.cidade,
-      estado: req.body.estado,
-      data_de_nascimento: req.body.data_de_nascimento,
+    const vaga = new Vaga({
+      escolaridade: req.body.escolaridade,
+      idiomas: req.body.idiomas,
+      religiao: req.body.religiao,
       genero: req.body.genero,
       numero_identificacao_nacional: req.body.numero_identificacao_nacional,
       nacionalidade: req.body.nacionalidade,
+      faixa_etaria: req.body.faixa_etaria,
       resumo: req.body.resumo,
       passaporte: req.body.passaporte,
-      quantidade_criancas: req.body.quantidade_criancas,
-      carro_exclusivo: req.body.carro_exclusivo,
+      experiencia_trabalho: req.body.experiencia_trabalho,
       receber_newsletter: req.body.receber_newsletter,
       data_disponibilidade: req.body.data_disponibilidade,
-      escolaridade: req.body.escolaridade,
-      experiencia: req.body.experiencia,
+      data_finalizacao_vaga: req.body.data_finalizacao_vaga,
+      titulo_vaga: req.body.titulo_vaga,
+      vaga_patrocinada: req.body.vaga_patrocinada,
+      pais: req.body.pais,
+      estado_provincia: req.body.estado_provincia,
+      quantidade_criancas: req.body.quantidade_criancas,
+      descricao: req.body.descricao,
       natacao: req.body.natacao,
       habilitacao: req.body.habilitacao,
-      complemento: req.body.complemento,
-      habilitacao_pid: req.body.habilitacao_pid,
-      experiencia_trabalho: req.body.experiencia_trabalho,
-      idiomas: req.body.idiomas,
-      religiao: req.body.religiao,
+      carro_exclusivo: req.body.carro_exclusivo,
+      user: req.userId
     });
 
-    aupair.aupair = req.userId;
-    aupair.save(err => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+    const novaVaga = await vaga.save();
 
-      res.send({ message: "Perfil registrado com sucesso" });
+    res.status(201).json(novaVaga);
+  } catch (error) {
+    console.error(error);
+    if (error.name === "ValidationError") {
+      res.status(400).json({ message: `Erro de validação: ${error.message}` });
+    } else {
+      res.status(500).json({ message: 'Erro ao criar a vaga.' });
+    }
+  }
+}
+
+exports.createAupairProfile = async (req, res) => {
+  try {
+    const {
+      telefone,
+      cep,
+      logradouro,
+      numero,
+      complemento,
+      cidade,
+      estado,
+      data_de_nascimento,
+      escolaridade,
+      idiomas,
+      religiao,
+      genero,
+      nacionalidade,
+      numero_identificacao_nacional,
+      resumo,
+      passaporte,
+      habilitacao_pid,
+      habilitacao,
+      quantidade_criancas,
+      experiencia_trabalho,
+      natacao,
+      carro_exclusivo,
+      receber_newsletter,
+      data_disponibilidade,
+    } = req.body;
+
+    const newAupair = new AupairProfile({
+      telefone,
+      cep,
+      logradouro,
+      numero,
+      complemento,
+      cidade,
+      estado,
+      data_de_nascimento,
+      escolaridade,
+      idiomas,
+      religiao,
+      genero,
+      nacionalidade,
+      numero_identificacao_nacional,
+      resumo,
+      passaporte,
+      habilitacao_pid,
+      habilitacao,
+      quantidade_criancas,
+      experiencia_trabalho,
+      natacao,
+      carro_exclusivo,
+      receber_newsletter,
+      data_disponibilidade,
+      user: req.userId
     });
-  })
 
+    const savedAupair = await newAupair.save();
+
+    res.status(201).json(savedAupair);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
 };
 
-exports.aupair_profile = (req, res) => {
-  Aupair.findOne({ 'aupair.0': mongoose.Types.ObjectId(req.userId) })
-    .exec((err, user) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+exports.getAupairProfile = async (req, res) => {
+  try {
+    const aupair = await AupairProfile.findOne({ 'user.0': mongoose.Types.ObjectId(req.userId) });
 
-      if (!user) {
-        return res.status(404).send({ message: "Aupair Not found." });
-      }
+    if (!aupair) {
+      return res.status(404).json({ message: "Perfil não encontrado", firstLogin: true });
+    }
 
-      res.json(user);
-
-    });
+    res.status(200).json(aupair);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
 };
 
-exports.aupair_profile_delete = (req, res) => {
-  Aupair.findOneAndDelete({ 'aupair.0': mongoose.Types.ObjectId(req.userId) })
-    .exec((err, user) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+exports.deleteAupairProfile = async (req, res) => {
+  try {
+    const deletedAupair = await AupairProfile.findOneAndDelete({ "user.0": req.userId });
 
-      if (!user) {
-        return res.status(404).send({ message: "Perfil não encontrado " });
-      }
+    if (!deletedAupair) {
+      return res.status(404).json({ message: "Perfil não encontrado" });
+    }
 
-      res.send({ message: "Perfil deletado com sucesso" });
-    });
+    res.status(200).json({ message: "Perfil deletado com sucesso" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
 };
-
 
 exports.findMatches = (req, res) => {
   if (req.query.roles === "ROLE_FAMILY") {
@@ -342,22 +314,21 @@ exports.findMatches = (req, res) => {
   }
 };
 
-exports.deleteVaga = (req, res) => {
-  Vaga.findByIdAndDelete(req.query.vagaID)
-    .exec((err, vaga) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+exports.deletarVaga = async (req, res, next) => {
+  try {
+    const vaga = await Vaga.findById(req.params.id);
 
-      if (!vaga) {
-        return res.status(404).send({ message: "Vaga não encontrada." });
-      }
+    if (!vaga) {
+      return res.status(404).json({ message: 'Vaga não encontrada' });
+    }
 
-      res.send({ message: "A vaga foi deletada com Sucesso" });
-    });
+    await vaga.remove();
 
-}
+    res.status(200).json({ message: 'Vaga deletada com sucesso' });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.deleteCandidatura = (req, res) => {
   Candidatura.find({ 'vaga.0': mongoose.Types.ObjectId(req.query.vagaID) }).deleteOne().exec()
@@ -485,23 +456,141 @@ exports.getcandidaturas = (req, res) => {
 
 };
 
+exports.favoritarVaga = async (req, res) => {
+  try {
+    const idAupair = req.userId;
 
-exports.userprofile = (req, res) => {
-  User.findById(req.query.userID
-  )
-    .exec((err, user) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
+    const vaga = await Vaga.findById(req.params.id);
+    if (!vaga) {
+      return res.status(404).send({
+        message: "Vaga não encontrada."
+      });
+    }
+
+    const index = vaga.aupair.findIndex(aupair => aupair._id.toString() === idAupair);
+    if (index !== -1) {
+      if (vaga.aupair[index].saved) {
+        vaga.aupair[index].saved = false;
+        await vaga.save();
+        return res.status(200).json({ message: "Vaga desfavoritada com sucesso" });
       }
+      vaga.aupair[index].saved = true;
+    } else {
+      vaga.aupair.push({ _id: idAupair, saved: true });
+    }
 
-      if (!user) {
-        return res.status(404).send({ message: "User Not found." });
-      }
+    await vaga.save();
 
-      res.json(user);
-
-    });
+    res.status(200).json({ message: "Vaga favoritada com sucesso" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
+exports.listarVagasSalvas = async (req, res) => {
+  try {
+    const idAupair = req.userId;
 
+    const vagas = await Vaga.find({
+      aupair: {
+        $elemMatch: {
+          _id: idAupair,
+          saved: true
+        }
+      }
+    }).populate("user", "nome email");
+
+    res.status(200).json(vagas);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.listarMinhasVagas = async (req, res) => {
+
+  if (!req.userRoles.includes("ROLE_FAMILY")) {
+    return res.status(403).json({ message: 'Você não tem permissão para essa página.' });
+  }
+  try {
+    // Busca todas as vagas do usuário atual
+    const vagas = await Vaga.find({ user: req.userId }).populate("user", "name email");
+
+    res.status(200).send(vagas);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error retrieving user's jobs" });
+  }
+};
+
+exports.SendEmail = async (req, res) => {
+  try {
+    // Configurar o transporter do nodemailer
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Obter todos os perfis de Au pair
+    const aupairs = await AupairProfile.find();
+
+    // Obter todas as vagas
+    const vagas = await Vaga.find();
+
+    // Iterar sobre cada perfil de Au pair
+    for (let i = 0; i < aupairs.length; i++) {
+      const aupair = aupairs[i];
+
+      // Buscar o usuário completo do Au pair
+      const user = await User.findById(aupair.user).populate("roles");
+
+      // Obter as vagas com as melhores pontuações para o perfil de Au pair atual
+      const vagasOrdenadas = vagas
+        .map((vaga) => ({
+          vaga,
+          score: calcularScore(vaga, aupair),
+        }))
+        .sort((a, b) => b.score - a.score);
+
+      // Enviar um e-mail com as três vagas com melhores pontuações
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Vagas de Au pair da semana",
+        html: `
+          <p>Olá ${user.name}, aqui estão as três melhores vagas de Au pair da semana:</p>
+          <ul>
+          ${vagasOrdenadas
+            .slice(0, 3)
+            .map(({ vaga }) => `
+              <li>
+                <p><strong>${vaga.titulo_vaga}</strong></p>
+                <p>${vaga.descricao}</p>
+                <ul>
+                  <li>Escolaridade: ${vaga.escolaridade}</li>
+                  <li>Idiomas: ${vaga.idiomas.join(", ")}</li>
+                  <li>Religião: ${vaga.religiao}</li>
+                  <li>Gênero: ${vaga.genero}</li>
+                  <li>Nacionalidade: ${vaga.nacionalidade}</li>
+                  <li>Faixa Etária: ${vaga.faixa_etaria.join(", ")}</li>
+                  <li>Experiência de Trabalho: ${vaga.experiencia_trabalho}</li>
+                  <li>Quantidade de Crianças: ${vaga.quantidade_criancas}</li>
+                  <li>Natação: ${vaga.natacao ? "Sim" : "Não"}</li>
+                  <li>Habilitação: ${vaga.habilitacao ? "Sim" : "Não"}</li>
+                </ul>
+              </li>
+            `)
+            .join("")}
+          </ul>
+        `,
+      });
+    }
+
+    res.status(200).json({ message: "E-mails enviados com sucesso" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao enviar e-mails" });
+  }
+};

@@ -3,16 +3,29 @@ const db = require("../models");
 const User = db.user;
 const Role = db.role;
 const Vaga = db.vaga;
-
+const validator = require("validator");
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
 exports.signup = (req, res) => {
-  const user = new User({
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 8),
-    name: req.body.name,
 
+  const { email, password, name } = req.body;
+
+  // Verifica se o email é válido
+  if (!validator.isEmail(email)) {
+    return res.status(400).json({ error: "Email inválido" });
+  }
+
+  // Verifica se a senha tem pelo menos 8 caracteres
+  if (!validator.isLength(password, { min: 8 })) {
+    return res.status(400).json({ error: "A senha deve ter pelo menos 8 caracteres" });
+  }
+
+  // Cria o usuário se todos os campos estiverem válidos
+  const user = new User({
+    email,
+    password: bcrypt.hashSync(password, 8),
+    name,
   });
 
   user.save((err, user) => {
@@ -122,17 +135,16 @@ exports.signin = (req, res) => {
         });
       }
 
-      var token = jwt.sign({ id: user.id }, config.secret, {
-        expiresIn: 86400 // 24 hours
-      });
-
-
-
       var authorities = [];
 
       for (let i = 0; i < user.roles.length; i++) {
         authorities.push("ROLE_" + user.roles[i].name.toUpperCase());
       }
+
+      var token = jwt.sign({ id: user.id, roles: authorities }, config.secret, {
+        expiresIn: 86400 // 24 hours
+      });
+
       res.status(200).send({
         id: user._id,
         email: user.email,
