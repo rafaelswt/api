@@ -185,6 +185,13 @@ exports.criarvaga = async (req, res) => {
 }
 
 exports.createAupairProfile = async (req, res) => {
+
+  const existingAupair = await AupairProfile.findOne({ user: req.userId });
+
+  if (existingAupair) {
+    return res.status(409).json({ message: "Aupair profile already exists" });
+  }
+
   try {
     const {
       telefone,
