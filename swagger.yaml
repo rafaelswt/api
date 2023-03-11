@@ -133,41 +133,66 @@ paths:
           description: Erro interno do servidor
       security: []
   /userprofile:
-   get:
-     tags:
-      - User
-     summary: Get user profile
-     description: Retrieve the user profile of the authenticated user
-     parameters:
+    get:
+      tags:
+       - Auth
+      summary: Obtém o perfil do usuário autenticado
+      description: Retorna o perfil do usuário autenticado com base no ID do usuário fornecido na solicitação.
+      security:
+        - jwt: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erro do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    parameters:
       - name: x-access-token
         in: header
-        description: Token de autenticação
+        description: Token de autenticação JWT
         required: true
         type: string
-     security:
-        - jwt: []
-
-     responses:
-       '200':
-         description: User profile retrieved successfully
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/UserProfile'
-       '401':
-         $ref: '#/components/responses/UnauthorizedError'
-       '404':
-         description: User not found
-         content:
-           application/json:
-             schema:
-               $ref: '#/components/schemas/ErrorResponse'
-       '500':
-         description: Server error
-         content:
-           application/json:
-             schema:
-                $ref: '#/components/schemas/ErrorResponse'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      '404':
+        description: Usuário não encontrado
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      '500':
+        description: Erro do servidor
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
   /vagas:
     get:
       summary: "Listar vagas"
