@@ -13,7 +13,7 @@ const app = express()
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    connectSrc: ["'self'", "https://aupamatch-api3.render.com/"]
+    connectSrc: ["'self'", "https://aupamatch-api3.render.com/", "http://localhost:8080/"]
   }
 }));
 

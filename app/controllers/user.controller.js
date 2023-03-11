@@ -600,8 +600,8 @@ exports.SendEmail = async (req, res) => {
 };
 
 exports.userprofile = (req, res) => {
-  User.findById(req.userId
-  )
+  User.findById(req.userId)
+    .populate("roles", "-__v -_id")
     .exec((err, user) => {
       if (err) {
         res.status(500).send({ message: err });
@@ -612,7 +612,15 @@ exports.userprofile = (req, res) => {
         return res.status(404).send({ message: "User Not found." });
       }
 
-      res.json(user);
+      const roles = user.roles.map(role => "ROLE_" + role.name.toUpperCase());
+      
+      const userProfile = {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        roles: roles
+      };
 
+      res.json(userProfile);
     });
 };

@@ -5,6 +5,7 @@ info:
   version: 1.0.0
 servers:
   - url: https://aupamatch-api3.onrender.com/api
+  - url: http://localhost:8080/api
 
 securityDefinitions:
   jwt:
@@ -134,65 +135,29 @@ paths:
       security: []
   /userprofile:
     get:
-      tags:
-       - Auth
-      summary: Obtém o perfil do usuário autenticado
-      description: Retorna o perfil do usuário autenticado com base no ID do usuário fornecido na solicitação.
-      security:
-        - jwt: []
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserProfile'
-        '404':
-          description: Usuário não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Erro do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-    parameters:
+      parameters:
       - name: x-access-token
         in: header
-        description: Token de autenticação JWT
+        description: Token de autenticação
         required: true
         type: string
-    requestBody:
-      required: true
-      content:
-        application/json:
+      security:
+        - jwt: []
+      tags:
+        - "user"
+      summary: "Get user profile"
+      description: "Returns the profile of the user authenticated by the provided JWT token."
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "Successful operation"
           schema:
-            type: object
-            properties:
-              userId:
-                type: string
-    responses:
-      '200':
-        description: OK
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserProfile'
-      '404':
-        description: Usuário não encontrado
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-      '500':
-        description: Erro do servidor
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/definitions/UserProfileResponse"
+        "401":
+          $ref: "#/responses/UnauthorizedError"
+        "404":
+          $ref: "#/responses/NotFoundError"
   /vagas:
     get:
       summary: "Listar vagas"
@@ -777,6 +742,38 @@ definitions:
       habilitacao_pid:
         type: string
 
+  UserProfileResponse:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+        description: "User ID"
+      email:
+        type: "string"
+        description: "User email"
+      name:
+        type: "string"
+        description: "User name"
+      roles:
+        type: "array"
+        items:
+          type: "string"
+          description: "User roles"
+  Error:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        description: "Error message"
+  UnauthorizedError:
+    description: "Unauthorized Error"
+    schema:
+      $ref: "#/definitions/Error"
+  NotFoundError:
+    description: "Not Found Error"
+    schema:
+      $ref: "#/definitions/Error"
 components:
   schemas:
     UserProfile:
@@ -809,3 +806,26 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+responses:
+  UnauthorizedError:
+    description: Usuário não autorizado a realizar a ação solicitada
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Não autorizado"
+
+  NotFoundError:
+    description: Recurso solicitado não foi encontrado
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Recurso não encontrado"
