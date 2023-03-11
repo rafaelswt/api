@@ -246,7 +246,11 @@ exports.createAupairProfile = async (req, res) => {
     res.status(201).json(savedAupair);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server Error" });
+    if (err instanceof mongoose.Error.ValidationError) {
+      res.status(422).json({ message: "Validation Error", errors: err.errors });
+    } else {
+      res.status(500).json({ message: "Server Error" });
+    }
   }
 };
 
