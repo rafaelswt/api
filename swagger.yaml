@@ -132,7 +132,7 @@ paths:
         "500":
           description: Erro interno do servidor
       security: []
-  /api/userprofile:
+  /userprofile:
    get:
      tags:
       - User
