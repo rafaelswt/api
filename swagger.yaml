@@ -673,9 +673,7 @@ definitions:
         type: string
         enum: ['Ensino Médio', 'Graduação', 'Pós-Graduação']
       idiomas:
-        type: array
-        items:
-          type: string
+        type: string
         enum: ['Inglês', 'Espanhol', 'Francês', 'Alemão', 'Italiano', 'Português', 'Outro']
       religiao:
         type: string
