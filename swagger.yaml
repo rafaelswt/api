@@ -144,7 +144,7 @@ paths:
       security:
         - jwt: []
       tags:
-        - "user"
+        - "User"
       summary: "Get user profile"
       description: "Returns the profile of the user authenticated by the provided JWT token."
       produces:
