@@ -174,12 +174,12 @@ exports.criarvaga = async (req, res) => {
     const novaVaga = await vaga.save();
 
     res.status(201).json(novaVaga);
-  } catch (error) {
-    console.error(error);
-    if (error.name === "ValidationError") {
-      res.status(400).json({ message: `Erro de validação: ${error.message}` });
+  } catch (err) {
+    console.error(err);
+    if (err instanceof mongoose.Error.ValidationError) {
+      res.status(422).json({ message: "Validation Error", errors: err.errors });
     } else {
-      res.status(500).json({ message: 'Erro ao criar a vaga.' });
+      res.status(500).json({ message: "Server Error" });
     }
   }
 }
