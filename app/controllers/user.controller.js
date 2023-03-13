@@ -62,18 +62,19 @@ exports.listarVagas = async (req, res) => {
         vagas[i].score = await calcularScore(vagas[i], profile);
 
         const ObjectID = require('mongodb').ObjectID;
-        const isSaved = vagas[i].aupair.find(a => String(a._id) === String(ObjectID(req.userId))) !== undefined;
+        const isSaved = vagas[i].aupair.find(a => String(a._id) === String(ObjectID(req.userId)))?.saved || false;
+
         // Adiciona o campo "isSaved" na própria vaga
         vagas[i].isSaved = isSaved;
       }
       
-      // Remove o array "aupair" da resposta
-      const vagasSemAupair = vagas.map(vaga => {
-        const { aupair, ...rest } = vaga;
-        return rest;
-      });
+      // // Remove o array "aupair" da resposta
+      // const vagasSemAupair = vagas.map(vaga => {
+      //   const { aupair, ...rest } = vaga;
+      //   return rest;
+      // });
 
-      return res.json(vagasSemAupair);
+      return res.json(vagas);
     }
 
     return res.status(403).json({ message: "Acesso negado." });
