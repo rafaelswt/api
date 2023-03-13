@@ -69,12 +69,12 @@ exports.listarVagas = async (req, res) => {
       }
       
       // // Remove o array "aupair" da resposta
-      // const vagasSemAupair = vagas.map(vaga => {
-      //   const { aupair, ...rest } = vaga;
-      //   return rest;
-      // });
+      const vagasSemAupair = vagas.map(vaga => {
+        const { aupair, ...rest } = vaga;
+        return rest;
+      });
 
-      return res.json(vagas);
+      return res.json(vagasSemAupair);
     }
 
     return res.status(403).json({ message: "Acesso negado." });
