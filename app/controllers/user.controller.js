@@ -35,20 +35,22 @@ async function calcularScore(vaga, aupair) {
 exports.listarVagas = async (req, res) => {
   try {
     if (req.userRoles.includes("ROLE_FAMILY")) {
-      const vagas = await Vaga.find({ user: mongoose.Types.ObjectId(req.userId) }).lean();
+      const vagas = await Vaga.find({ user: mongoose.Types.ObjectId(req.userId) })
+        .lean();
       return res.json(vagas);
     }
 
     if (req.userRoles.includes("ROLE_AUPAIR")) {
-      const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } }).lean();
+      const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } })
+        .lean();
 
       if (!vagas) {
         return res.status(404).json({ message: "Nenhuma vaga encontrada." });
       }
 
-      const aupair = await AupairProfile.findOne({ user: req.userId }).lean();
+      const profile = await AupairProfile.findOne({ user: req.userId }).lean();
 
-      if (!aupair) {
+      if (!profile) {
         return res.status(404).json({ message: "Perfil de Au Pair não encontrado." });
       }
 
@@ -57,10 +59,21 @@ exports.listarVagas = async (req, res) => {
         vagas[i].views += 1;
         await Vaga.updateOne({ _id: vagas[i]._id }, { $inc: { views: 1 } });
 
-        vagas[i].score = await calcularScore(vagas[i], aupair);
-      }
+        vagas[i].score = await calcularScore(vagas[i], profile);
 
-      return res.json(vagas);
+        const ObjectID = require('mongodb').ObjectID;
+        const isSaved = vagas[i].aupair.find(a => String(a._id) === String(ObjectID(req.userId))) !== undefined;
+        // Adiciona o campo "isSaved" na própria vaga
+        vagas[i].isSaved = isSaved;
+      }
+      
+      // Remove o array "aupair" da resposta
+      const vagasSemAupair = vagas.map(vaga => {
+        const { aupair, ...rest } = vaga;
+        return rest;
+      });
+
+      return res.json(vagasSemAupair);
     }
 
     return res.status(403).json({ message: "Acesso negado." });
@@ -69,6 +82,7 @@ exports.listarVagas = async (req, res) => {
     res.status(500).json({ message: "Erro ao buscar vagas." });
   }
 }
+
 
 exports.vaga = (req, res) => {
   Vaga.findById(req.query.vagaID)
