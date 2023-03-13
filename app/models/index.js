@@ -10,7 +10,7 @@ db.role = require("./role.model");
 db.vaga = require("./vaga.model")
 db.candidatura = require("./candidatura.model")
 db.aupairProfile = require("./aupairProfile.model")
-db.familia_has_vaga = require("./familia_has_vaga.model")
+db.visualizacao = require("./visualizacao.model")
 
 db.ROLES = ["user", "aupair", "family", "agency"];
 

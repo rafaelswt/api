@@ -3,9 +3,9 @@ const { vaga, user, candidatura, familia_has_vaga } = require("../models");
 const db = require("../models");
 const User = db.user;
 const Vaga = db.vaga;
+const Visualizacao = db.visualizacao
 const Candidatura = db.candidatura;
 const mongoose = require('mongoose');
-const Familia_has_vaga = db.familia_has_vaga;
 const AupairProfile = db.aupairProfile;
 mongoose.Promise = global.Promise;
 const nodemailer = require("nodemailer");
@@ -40,6 +40,8 @@ exports.listarVagas = async (req, res) => {
       return res.json(vagas);
     }
 
+    console.log(req.userRoles)
+
     if (req.userRoles.includes("ROLE_AUPAIR")) {
       const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } })
         .lean();
@@ -56,8 +58,23 @@ exports.listarVagas = async (req, res) => {
 
       for (let i = 0; i < vagas.length; i++) {
         vagas[i].score = "0%";
-        vagas[i].views += 1;
-        await Vaga.updateOne({ _id: vagas[i]._id }, { $inc: { views: 1 } });
+
+        // Verifica se a usuária já visualizou a vaga antes de incrementar a contagem de visualizações
+        const visualizacao = await Visualizacao.findOne({
+          vaga: vagas[i]._id,
+          usuario: req.userId
+        });
+
+        if (!visualizacao) {
+          vagas[i].views += 1;
+          await Vaga.updateOne({ _id: vagas[i]._id }, { $inc: { views: 1 } });
+
+          // Registra a visualização da usuária na coleção "Visualizações"
+          await Visualizacao.create({
+            vaga: vagas[i]._id,
+            usuario: req.userId
+          });
+        }
 
         vagas[i].score = await calcularScore(vagas[i], profile);
 
@@ -67,7 +84,7 @@ exports.listarVagas = async (req, res) => {
         // Adiciona o campo "isSaved" na própria vaga
         vagas[i].isSaved = isSaved;
       }
-      
+
       // // Remove o array "aupair" da resposta
       const vagasSemAupair = vagas.map(vaga => {
         const { aupair, ...rest } = vaga;
@@ -635,7 +652,7 @@ exports.userprofile = (req, res) => {
       }
 
       const roles = user.roles.map(role => "ROLE_" + role.name.toUpperCase());
-      
+
       const userProfile = {
         id: user._id,
         email: user.email,
