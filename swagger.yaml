@@ -200,10 +200,10 @@ paths:
                   habilitacao: true
                   carro_exclusivo: false
                   views: 6
+                  isSaved: false
                   user: ["6400075f0e87cc0035ceceeb"]
                   resumo: "Procuramos uma au pair para cuidar de nossos filhos durante a semana"
                   passaporte: "123456789"
-                  aupair: []
                   createdAt: "2023-03-06T23:32:08.784Z"
                   updatedAt: "2023-03-07T00:06:26.162Z"
                   __v: 0
