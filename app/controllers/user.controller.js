@@ -40,8 +40,6 @@ exports.listarVagas = async (req, res) => {
       return res.json(vagas);
     }
 
-    console.log(req.userRoles)
-
     if (req.userRoles.includes("ROLE_AUPAIR")) {
       const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } })
         .lean();
