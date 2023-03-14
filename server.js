@@ -7,6 +7,7 @@ require('dotenv').config()
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./swagger.yaml');
+const scheduler = require("./app/controllers/scheduler.js");
 
 const app = express()
 
@@ -51,6 +52,7 @@ db.mongoose
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Webbstars application." });
 });
+scheduler.start();
 
 // routes
 require("./app/routes/auth.routes")(app);

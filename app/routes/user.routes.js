@@ -69,4 +69,10 @@ module.exports = function(app) {
     [authJwt.verifyToken],
     controller.userprofile
   );
+
+  app.get(
+    "/api/email",
+    [authJwt.verifyToken],
+    controller.SendEmail
+  );
 };
