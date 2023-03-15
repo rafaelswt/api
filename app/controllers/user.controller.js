@@ -26,7 +26,7 @@ async function calcularScore(vaga, aupair) {
         else if (scoreFields[j] === "faixa_etaria") {
           if (vaga[scoreFields[j]].includes("Qualquer Idade") ||
             (aupair.data_de_nascimento !== undefined &&
-              vaga[scoreFields[j]].includes(obterFaixaEtaria(aupair.data_de_nascimento)))) {
+              vaga[scoreFields[j]].includes(aupair.data_de_nascimento))) {
             score += 1;
           }
         }
@@ -55,7 +55,7 @@ async function calcularScore(vaga, aupair) {
 
 function obterFaixaEtaria(dataDeNascimento) {
   const agora = new Date();
-  const idade = agora.getFullYear() - dataDeNascimento.getFullYear();
+  let idade = agora.getFullYear() - dataDeNascimento.getFullYear();
   const mesAtual = agora.getMonth();
   const mesDeNascimento = dataDeNascimento.getMonth();
 

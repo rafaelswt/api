@@ -203,7 +203,6 @@ paths:
                   isSaved: false
                   user: ["6400075f0e87cc0035ceceeb"]
                   resumo: "Procuramos uma au pair para cuidar de nossos filhos durante a semana"
-                  passaporte: "123456789"
                   createdAt: "2023-03-06T23:32:08.784Z"
                   updatedAt: "2023-03-07T00:06:26.162Z"
                   __v: 0
@@ -483,7 +482,6 @@ paths:
                   views: 6
                   user: ["6400075f0e87cc0035ceceeb"]
                   resumo: "Procuramos uma au pair para cuidar de nossos filhos durante a semana"
-                  passaporte: "123456789"
                   aupair: []
                   createdAt: "2023-03-06T23:32:08.784Z"
                   updatedAt: "2023-03-07T00:06:26.162Z"
@@ -541,7 +539,6 @@ paths:
                   views: 6
                   user: ["6400075f0e87cc0035ceceeb"]
                   resumo: "Procuramos uma au pair para cuidar de nossos filhos durante a semana"
-                  passaporte: "123456789"
                   aupair: []
                   createdAt: "2023-03-06T23:32:08.784Z"
                   updatedAt: "2023-03-07T00:06:26.162Z"
@@ -647,8 +644,6 @@ definitions:
         type: string
       resumo:
         type: string
-      passaporte:
-        type: string
       receber_newsletter:
         type: boolean
         default: false
@@ -736,8 +731,6 @@ definitions:
       numero_identificacao_nacional:
         type: string
       resumo:
-        type: string
-      passaporte:
         type: string
       habilitacao_pid:
         type: string

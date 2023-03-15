@@ -42,7 +42,6 @@ const VagaSchema = new mongoose.Schema({
     default: 'Não especificado'
   },
   resumo: String,
-  passaporte: String,
   receber_newsletter: {
     type: Boolean,
     default: false
