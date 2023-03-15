@@ -11,9 +11,11 @@ mongoose.Promise = global.Promise;
 const nodemailer = require("nodemailer");
 
 async function calcularScore(vaga, aupair) {
-  const scoreFields = ["natacao", "escolaridade", "idiomas", "religiao", "habilitacao", "quantidade_criancas", "experiencia_trabalho", "genero", "nacionalidade", "carro_exclusivo", "receber_newsletter", "data_disponibilidade"];
+  const scoreFields = ["escolaridade", "idiomas", "religiao", "quantidade_criancas", "experiencia_trabalho", "genero", "nacionalidade", "habilitacao", "carro_exclusivo", "natacao", "faixa_etaria"];
   let score = 0;
-
+  
+  aupair.faixa_etaria = obterFaixaEtaria(aupair.data_de_nascimento);
+  
   for (let j = 0; j < scoreFields.length; j++) {
     if (vaga[scoreFields[j]] !== undefined && aupair[scoreFields[j]] !== undefined) {
       if (Array.isArray(vaga[scoreFields[j]]) && Array.isArray(aupair[scoreFields[j]])) {
@@ -21,8 +23,27 @@ async function calcularScore(vaga, aupair) {
         if (intersection.length > 0) {
           score += intersection.length / aupair[scoreFields[j]].length;
         }
+        else if (scoreFields[j] === "faixa_etaria") {
+          if (vaga[scoreFields[j]].includes("Qualquer Idade") ||
+            (aupair.data_de_nascimento !== undefined &&
+              vaga[scoreFields[j]].includes(obterFaixaEtaria(aupair.data_de_nascimento)))) {
+            score += 1;
+          }
+        }
+        else if (scoreFields[j] === "idiomas") {
+          if (vaga[scoreFields[j]].includes("Qualquer Idioma")) {
+            score += 1;
+          }
+        }
       } else {
-        if (vaga[scoreFields[j]].toString() === aupair[scoreFields[j]].toString()) {
+        if (vaga[scoreFields[j]]?.toString() === aupair[scoreFields[j]]?.toString() ||
+          vaga[scoreFields[j]] === "Qualquer Nacionalidade" ||
+          vaga[scoreFields[j]] === "Qualquer Gênero" ||
+          vaga[scoreFields[j]] === "Qualquer Religião" ||
+          vaga[scoreFields[j]] === "Qualquer Escolaridade" ||
+          vaga[scoreFields[j]] === "Não especificado" ||
+          vaga[scoreFields[j]] === false
+        ) {
           score += 1;
         }
       }
@@ -32,6 +53,32 @@ async function calcularScore(vaga, aupair) {
   return `${(score * 100 / scoreFields.length).toFixed(0)}%`;
 }
 
+function obterFaixaEtaria(dataDeNascimento) {
+  const agora = new Date();
+  const idade = agora.getFullYear() - dataDeNascimento.getFullYear();
+  const mesAtual = agora.getMonth();
+  const mesDeNascimento = dataDeNascimento.getMonth();
+
+  if (mesAtual < mesDeNascimento || (mesAtual === mesDeNascimento && agora.getDate() < dataDeNascimento.getDate())) {
+    idade--;
+  }
+
+  if (idade >= 51) {
+    return "51+";
+  } else if (idade >= 41) {
+    return "41-50";
+  } else if (idade >= 31) {
+    return "31-40";
+  } else if (idade >= 22) {
+    return "22-30";
+  } else if (idade >= 18) {
+    return "18-21";
+  } else {
+    return "Qualquer Idade";
+  }
+}
+
+
 exports.listarVagas = async (req, res) => {
   try {
     if (req.userRoles.includes("ROLE_FAMILY")) {
@@ -39,8 +86,6 @@ exports.listarVagas = async (req, res) => {
         .lean();
       return res.json(vagas);
     }
-
-    console.log(req.userRoles)
 
     if (req.userRoles.includes("ROLE_AUPAIR")) {
       const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } })
