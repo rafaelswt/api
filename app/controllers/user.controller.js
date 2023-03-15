@@ -41,10 +41,14 @@ async function calcularScore(vaga, aupair) {
           vaga[scoreFields[j]] === "Qualquer Gênero" ||
           vaga[scoreFields[j]] === "Qualquer Religião" ||
           vaga[scoreFields[j]] === "Qualquer Escolaridade" ||
-          vaga[scoreFields[j]] === "Não especificado" ||
-          vaga[scoreFields[j]] === false
+          vaga[scoreFields[j]] === "Não especificado" 
         ) {
           score += 1;
+        }
+        else if (scoreFields[j] === "habilitacao" || scoreFields[j] === "natacao") {
+          if (vaga[scoreFields[j]] === false) {
+            score += 1;
+          }
         }
       }
     }
