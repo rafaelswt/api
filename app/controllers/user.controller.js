@@ -13,9 +13,9 @@ const nodemailer = require("nodemailer");
 async function calcularScore(vaga, aupair) {
   const scoreFields = ["escolaridade", "idiomas", "religiao", "quantidade_criancas", "experiencia_trabalho", "genero", "nacionalidade", "habilitacao", "carro_exclusivo", "natacao", "faixa_etaria"];
   let score = 0;
-  
+
   aupair.faixa_etaria = obterFaixaEtaria(aupair.data_de_nascimento);
-  
+
   for (let j = 0; j < scoreFields.length; j++) {
     if (vaga[scoreFields[j]] !== undefined && aupair[scoreFields[j]] !== undefined) {
       if (Array.isArray(vaga[scoreFields[j]]) && Array.isArray(aupair[scoreFields[j]])) {
@@ -41,7 +41,7 @@ async function calcularScore(vaga, aupair) {
           vaga[scoreFields[j]] === "Qualquer Gênero" ||
           vaga[scoreFields[j]] === "Qualquer Religião" ||
           vaga[scoreFields[j]] === "Qualquer Escolaridade" ||
-          vaga[scoreFields[j]] === "Não especificado" 
+          vaga[scoreFields[j]] === "Não especificado"
         ) {
           score += 1;
         }
@@ -581,20 +581,77 @@ exports.favoritarVaga = async (req, res) => {
 
 exports.listarVagasSalvas = async (req, res) => {
   try {
-    const idAupair = req.userId;
+    if (req.userRoles.includes("ROLE_FAMILY")) {
+      const vagas = await Vaga.find({ user: mongoose.Types.ObjectId(req.userId) })
+        .lean();
+      return res.json(vagas);
+    }
 
-    const vagas = await Vaga.find({
-      aupair: {
-        $elemMatch: {
-          _id: idAupair,
-          saved: true
+    if (req.userRoles.includes("ROLE_AUPAIR")) {
+      const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } })
+        .lean();
+
+      if (!vagas) {
+        return res.status(404).json({ message: "Nenhuma vaga encontrada." });
+      }
+
+      const profile = await AupairProfile.findOne({ user: req.userId }).lean();
+
+      if (!profile) {
+        return res.status(404).json({ message: "Perfil de Au Pair não encontrado." });
+      }
+
+      const savedVagas = [];
+
+      for (let i = 0; i < vagas.length; i++) {
+        vagas[i].score = "0%";
+
+        // Verifica se a usuária já visualizou a vaga antes de incrementar a contagem de visualizações
+        const visualizacao = await Visualizacao.findOne({
+          vaga: vagas[i]._id,
+          usuario: req.userId
+        });
+
+        if (!visualizacao) {
+          vagas[i].views += 1;
+          await Vaga.updateOne({ _id: vagas[i]._id }, { $inc: { views: 1 } });
+
+          // Registra a visualização da usuária na coleção "Visualizações"
+          await Visualizacao.create({
+            vaga: vagas[i]._id,
+            usuario: req.userId
+          });
+        }
+
+        vagas[i].score = await calcularScore(vagas[i], profile);
+
+        const ObjectID = require('mongodb').ObjectID;
+        const isSaved = vagas[i].aupair.find(a => String(a._id) === String(ObjectID(req.userId)))?.saved || false;
+
+        // Adiciona o campo "isSaved" na própria vaga
+        vagas[i].isSaved = isSaved;
+
+        // Adiciona a vaga à lista de vagas salvas se o campo isSaved for verdadeiro
+        if (isSaved) {
+          savedVagas.push(vagas[i]);
         }
       }
-    }).populate("user", "nome email");
 
-    res.status(200).json(vagas);
+      // // Remove o array "aupair" da resposta
+      const vagasSemAupair = savedVagas.map(vaga => {
+        const { aupair, ...rest } = vaga;
+        return rest;
+      });
+
+
+
+      return res.json(vagasSemAupair);
+    }
+
+    return res.status(403).json({ message: "Acesso negado." });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Erro ao buscar vagas." });
   }
 };
 
