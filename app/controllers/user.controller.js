@@ -301,6 +301,13 @@ exports.createAupairProfile = async (req, res) => {
       data_disponibilidade,
     } = req.body;
 
+    const dob = new Date(data_de_nascimento);
+    const ageInMs = Date.now() - dob.getTime();
+    const ageInYears = ageInMs / (1000 * 60 * 60 * 24 * 365.25);
+    if (ageInYears < 18) {
+      return res.status(400).json({ message: "Aupair must be at least 18 years old to create a profile" });
+    }
+
     const newAupair = new AupairProfile({
       telefone,
       cep,
