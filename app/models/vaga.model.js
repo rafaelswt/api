@@ -96,6 +96,21 @@ const VagaSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     }
+  }],
+  candidaturas: [{
+    aupairId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Aupair"
+    },
+    data_candidatura: {
+      type: Date,
+      default: Date.now
+    },
+    status: {
+      type: String,
+      enum: ['pendente', 'aceita', 'rejeitada'],
+      default: 'pendente'
+    }
   }]
 }, { timestamps: true });
 

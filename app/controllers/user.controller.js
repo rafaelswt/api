@@ -454,39 +454,37 @@ exports.deleteCandidatura = (req, res) => {
 
 }
 
-exports.candidatarse = (req, res) => {
-  const candidatura = new Candidatura({
-    vaga: req.query.vagaID,
-    aupair: req.userId,
-    escolha: false
-  })
+exports.criarCandidatura = async (req, res) => {
+  try {
+    const vagaID = req.query.vagaID;
+    const userId = req.userId;
 
-  Vaga.findById(req.query.vagaID)
-    .exec((err, vaga) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+    // Procura a vaga correspondente ao ID fornecido
+    const vaga = await Vaga.findById(vagaID);
 
-      candidatura.user = vaga.user
-      candidatura.save()
+    if (!vaga) {
+      return res.status(404).json({ error: "Vaga não encontrada" });
+    }
 
-      vaga.aupair.push(req.query.aupairID);
-      vaga.save(err => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
+    // Verifica se a aupair já se candidatou a essa vaga
+    const candidaturaExistente = vaga && vaga.candidaturas && vaga.candidaturas.find(
+      (candidatura) => String(candidatura.aupairId) === userId
+    );
+    if (candidaturaExistente) {
+      return res
+        .status(400)
+        .json({ error: "Aupair já se candidatou a essa vaga" });
+    }
 
-        res.send({ message: "Candidatura Feita" });
-      });
+    // Adiciona uma nova candidatura à vaga
+    vaga.candidaturas.push({ aupairId: userId });
+    await vaga.save();
 
-
-      if (!vaga) {
-        return res.status(404).send({ message: "Vaga não encontrada." });
-      }
-    });
-
+    return res.status(201).json({ message: "Candidatura criada com sucesso" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
 };
 
 exports.match = (req, res) => {

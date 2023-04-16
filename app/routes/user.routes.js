@@ -61,7 +61,7 @@ module.exports = function(app) {
   app.get(
     "/api/candidatar",
     [authJwt.verifyToken],
-    controller.candidatarse
+    controller.criarCandidatura
   )
 
   app.get(
