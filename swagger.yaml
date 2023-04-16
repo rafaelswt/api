@@ -552,7 +552,42 @@ paths:
 
         500:
           description: Erro ao buscar vagas
-
+          
+  /candidatar:
+    get:
+      summary: Cria uma nova candidatura à vaga
+      tags:
+        - "Candidatar"
+      description: Cria uma nova candidatura à vaga correspondente ao ID fornecido na query string, desde que a au pair ainda não tenha se candidatado à mesma vaga.
+      parameters:
+        - name: vagaID
+          in: query
+          description: ID da vaga
+          required: true
+          type: string
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+  
+      responses:
+        201:
+          description: Candidatura criada com sucesso
+          schema:
+            $ref: "#/definitions/Candidatura"
+        400:
+          description: Aupair já se candidatou a essa vaga
+          schema:
+            $ref: "#/definitions/Candidatura"
+        404:
+          description: Vaga não encontrada
+          schema:
+            $ref: "#/definitions/Candidatura"
+        500:
+          description: Erro interno do servidor
+          schema:
+            $ref: "#/definitions/Candidatura"
 definitions:
   Vaga:
     type: object
