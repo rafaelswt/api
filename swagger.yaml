@@ -574,20 +574,13 @@ paths:
       responses:
         201:
           description: Candidatura criada com sucesso
-          schema:
-            $ref: "#/definitions/Candidatura"
+
         400:
           description: Aupair já se candidatou a essa vaga
-          schema:
-            $ref: "#/definitions/Candidatura"
         404:
           description: Vaga não encontrada
-          schema:
-            $ref: "#/definitions/Candidatura"
         500:
           description: Erro interno do servidor
-          schema:
-            $ref: "#/definitions/Candidatura"
 definitions:
   Vaga:
     type: object
