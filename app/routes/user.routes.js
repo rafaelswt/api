@@ -71,6 +71,12 @@ module.exports = function(app) {
   )
 
   app.get(
+    "/api/aupair/candidaturas",
+    [authJwt.verifyToken],
+    controller.getCandidaturasByAupairId
+  )
+
+  app.get(
     "/api/userprofile",
     [authJwt.verifyToken],
     controller.userprofile

@@ -487,7 +487,6 @@ exports.criarCandidatura = async (req, res) => {
   }
 };
 
-
 exports.getCandidaturasByUserId = async (req, res) => {
   try {
     const vagas = await Vaga.find({ user: req.userId })
@@ -496,6 +495,29 @@ exports.getCandidaturasByUserId = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Ocorreu um erro ao buscar as candidaturas.');
+  }
+};
+
+exports.getCandidaturasByAupairId = async (req, res) => {
+  try {
+    const candidaturas = await Vaga.find({
+      "candidaturas.aupairId": req.userId
+    }, {
+      candidaturas: {
+        $elemMatch: {
+          aupairId: req.userId
+        }
+      }
+    });
+
+    res.status(200).json({
+      candidaturas
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Ocorreu um erro ao buscar as candidaturas do Aupair."
+    });
   }
 };
 
