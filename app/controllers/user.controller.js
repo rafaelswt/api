@@ -487,6 +487,18 @@ exports.criarCandidatura = async (req, res) => {
   }
 };
 
+
+exports.getCandidaturasByUserId = async (req, res) => {
+  try {
+    const vagas = await Vaga.find({ user: req.userId })
+    const candidaturas = vagas.reduce((acc, vaga) => [...acc, ...vaga.candidaturas], []);
+    res.json(candidaturas);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Ocorreu um erro ao buscar as candidaturas.');
+  }
+};
+
 exports.match = (req, res) => {
   Candidatura.findById(req.query.candidaturaID)
     .exec((err, candidatura) => {
@@ -531,24 +543,6 @@ exports.match = (req, res) => {
       });
 
 
-    });
-
-};
-
-
-exports.getcandidaturas = (req, res) => {
-  Candidatura.find({ $or: [{ "user.0": mongoose.Types.ObjectId(req.query.id) }, { "aupair.0": mongoose.Types.ObjectId(req.query.id) }] })
-    .exec((err, candidatura) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
-
-      if (!candidatura) {
-        return res.status(404).send({ message: "Vaga não encontrada." });
-      }
-
-      res.json(candidatura);
     });
 
 };

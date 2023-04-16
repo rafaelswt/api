@@ -412,7 +412,7 @@ paths:
     post:
       summary: Favoritar uma vaga
       tags:
-      - Favoritar
+      - Favoritos
       description: >
         Adiciona ou remove a vaga com o ID especificado à lista de vagas favoritas do usuário autenticado.
       operationId: favoritarVaga
@@ -444,7 +444,7 @@ paths:
     get:
       summary: Lista as vagas salvas por um(a) au pair
       tags:
-        - "Favoritar"
+        - "Favoritos"
       security:
         - bearerAuth: []
       parameters:
@@ -557,7 +557,7 @@ paths:
     get:
       summary: Cria uma nova candidatura à vaga
       tags:
-        - "Candidatar"
+        - "Candidatura"
       description: Cria uma nova candidatura à vaga correspondente ao ID fornecido na query string, desde que a au pair ainda não tenha se candidatado à mesma vaga.
       parameters:
         - name: vagaID
@@ -574,7 +574,6 @@ paths:
       responses:
         201:
           description: Candidatura criada com sucesso
-
         400:
           description: Aupair já se candidatou a essa vaga
         404:

@@ -65,6 +65,12 @@ module.exports = function(app) {
   )
 
   app.get(
+    "/api/candidaturas",
+    [authJwt.verifyToken],
+    controller.getCandidaturasByUserId
+  )
+
+  app.get(
     "/api/userprofile",
     [authJwt.verifyToken],
     controller.userprofile
