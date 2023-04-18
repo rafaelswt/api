@@ -623,7 +623,83 @@ paths:
           description: "Candidaturas recuperadas com sucesso"
         401:
           $ref: "#/responses/UnauthorizedError"
-
+  /vagas/{id}/candidaturas:
+    delete:
+      summary: Remove candidatura da Au Pair para uma vaga
+      tags:
+       - "Candidaturas"
+      parameters:
+        - in: path
+          name: id
+          description: ID da vaga
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Authorization
+          description: Token de autorização JWT
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Candidatura removida com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        param:
+                          type: string
+                        msg:
+                          type: string
+                        value:
+                          type: string
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Vaga ou candidatura não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 
 definitions:
   Vaga:

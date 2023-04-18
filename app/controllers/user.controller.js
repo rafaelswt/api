@@ -429,28 +429,38 @@ exports.deletarVaga = async (req, res, next) => {
   }
 };
 
-exports.deleteCandidatura = (req, res) => {
-  Candidatura.find({ 'vaga.0': mongoose.Types.ObjectId(req.query.vagaID) }).deleteOne().exec()
-  Vaga.findById(req.query.vagaID)
-    .exec((err, vaga) => {
-      if (err) {
-        res.status(500).send({ message: err });
-        return;
-      }
+exports.deleteCandidatura = async (req, res) => {
+  try {
+    const vaga = await Vaga.findById(req.params.id);
+    if (!vaga) {
+      return res.status(404).json({ message: 'Vaga não encontrada' });
+    }
 
-      vaga.escolha = false
+    // Encontrar a candidatura da Au Pair na vaga
+    const candidatura = vaga.candidaturas.find(
+      (candidatura) =>
+        candidatura.aupairId.toString() === req.userId 
+    );
+    if (!candidatura) {
+      return res
+        .status(404)
+        .json({ message: 'Candidatura não encontrada para essa Au Pair nesta vaga' });
+    }
 
-      vaga.aupair.pull(req.query.aupairID);
+    // Remover a candidatura da lista de candidaturas da vaga
+    vaga.candidaturas = vaga.candidaturas.filter(
+      (candidatura) =>
+        candidatura.aupairId.toString() !== req.userId
+    );
 
-      vaga.save(err => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
+    // Salvar as alterações na vaga
+    await vaga.save();
 
-        res.send({ message: "Candidatura Deletada com sucesso" });
-      });
-    });
+    return res.status(200).json({ message: 'Candidatura removida com sucesso' });
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).json({ message: 'Erro ao apagar candidatura da Au Pair para vaga' });
+  }
 
 }
 
@@ -550,6 +560,25 @@ exports.getCandidaturasByAupairId = async (req, res) => {
   }
   
 };
+
+exports.deletarCandidatura = async (req, res) => {
+  try {
+    const vaga = await Vaga.findOne({ _id: req.params.idVaga, "candidaturas.aupairId": req.userId });
+  
+    if (!vaga) {
+      return res.status(404).json({ mensagem: "Candidatura não encontrada." });
+    }
+  
+    vaga.candidaturas = vaga.candidaturas.filter((candidatura) => candidatura.aupairId.toString() !== req.userId);
+    await vaga.save();
+  
+    return res.status(200).json({ mensagem: "Candidatura deletada com sucesso." });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ mensagem: "Erro ao deletar candidatura." });
+  }
+};
+
 
 exports.match = (req, res) => {
   Candidatura.findById(req.query.candidaturaID)

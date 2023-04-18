@@ -76,6 +76,10 @@ module.exports = function(app) {
     controller.getCandidaturasByAupairId
   )
 
+  app.delete(
+    "/api/vagas/:id/candidaturas",[authJwt.verifyToken], controller.deleteCandidatura
+  );
+
   app.get(
     "/api/userprofile",
     [authJwt.verifyToken],
