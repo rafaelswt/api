@@ -314,21 +314,31 @@ paths:
           schema:
             type: string
           description: ID da vaga a ser atualizada
-        - name: body
-          in: body
-          description: Parâmetros para a criação da vaga
-          required: true
-          schema:
-            $ref: '#/definitions/Vaga'
         - in: header
           name: Authorization
           required: true
           schema:
             type: string
           description: Token JWT de autenticação do usuário
+        - name: body
+          in: body
+          description: Parâmetros para a criação da vaga
+          required: true
+          schema:
+            type: object
+            properties:
+              titulo_vaga:
+                type: string
+                example: "Novo título para a vaga"
+              descricao:
+                type: string
+                example: "Nova descrição para a vaga"
+      
+
+      
       responses:
         '200':
-          description: Vaga criada com sucesso
+          description: Vaga alterada com sucesso
           schema:
             $ref: '#/definitions/Vaga'
         '400':
@@ -606,7 +616,7 @@ paths:
           description: Token de autenticação
           required: true
           type: string
-  
+
       responses:
         201:
           description: Candidatura criada com sucesso
