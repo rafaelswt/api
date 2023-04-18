@@ -429,6 +429,52 @@ exports.deletarVaga = async (req, res, next) => {
   }
 };
 
+exports.updateVaga = async(req, res) => {
+  try {
+    // Verifica se a vaga existe
+    const vaga = await Vaga.findById(req.params.id);
+
+    if (!vaga) {
+      return res.status(404).json({ message: 'Vaga não encontrada.' });
+    }
+    // Verifica se o usuário tem permissão para editar a vaga
+    if (vaga.user.toString() !== req.userId) {
+      return res.status(403).json({ message: 'Você não tem permissão para editar esta vaga.' });
+    }
+
+    // Atualiza os atributos da vaga com os valores enviados na requisição
+    vaga.escolaridade = req.body.escolaridade || vaga.escolaridade;
+    vaga.idiomas = req.body.idiomas || vaga.idiomas;
+    vaga.religiao = req.body.religiao || vaga.religiao;
+    vaga.genero = req.body.genero || vaga.genero;
+    vaga.nacionalidade = req.body.nacionalidade || vaga.nacionalidade;
+    vaga.faixa_etaria = req.body.faixa_etaria || vaga.faixa_etaria;
+    vaga.experiencia_trabalho = req.body.experiencia_trabalho || vaga.experiencia_trabalho;
+    vaga.quantidade_criancas = req.body.quantidade_criancas || vaga.quantidade_criancas;
+    vaga.resumo = req.body.resumo || vaga.resumo;
+    vaga.receber_newsletter = req.body.receber_newsletter || vaga.receber_newsletter;
+    vaga.data_disponibilidade = req.body.data_disponibilidade || vaga.data_disponibilidade;
+    vaga.data_finalizacao_vaga = req.body.data_finalizacao_vaga || vaga.data_finalizacao_vaga;
+    vaga.titulo_vaga = req.body.titulo_vaga || vaga.titulo_vaga;
+    vaga.vaga_patrocinada = req.body.vaga_patrocinada || vaga.vaga_patrocinada;
+    vaga.pais = req.body.pais || vaga.pais;
+    vaga.estado_provincia = req.body.estado_provincia || vaga.estado_provincia;
+    vaga.descricao = req.body.descricao || vaga.descricao;
+    vaga.natacao = req.body.natacao || vaga.natacao;
+    vaga.habilitacao = req.body.habilitacao || vaga.habilitacao;
+    vaga.carro_exclusivo = req.body.carro_exclusivo || vaga.carro_exclusivo;
+    vaga.score = req.body.score || vaga.score;
+
+    // Salva a vaga atualizada no banco de dados
+    const updatedVaga = await vaga.save();
+
+    res.json(updatedVaga);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro ao atualizar a vaga.' });
+  }
+}
+
 exports.deleteCandidatura = async (req, res) => {
   try {
     const vaga = await Vaga.findById(req.params.id);

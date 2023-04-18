@@ -302,6 +302,42 @@ paths:
                 type: string
                 description: Mensagem de erro
                 example: Vaga não encontrada
+  /vagas/{id}:
+    put:
+      summary: Atualiza uma vaga existente
+      tags:
+        - "Minhas vagas"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID da vaga a ser atualizada
+        - name: body
+          in: body
+          description: Parâmetros para a criação da vaga
+          required: true
+          schema:
+            $ref: '#/definitions/Vaga'
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+          description: Token JWT de autenticação do usuário
+      responses:
+        '200':
+          description: Vaga criada com sucesso
+          schema:
+            $ref: '#/definitions/Vaga'
+        '400':
+          description: Erro na requisição
+        '401':
+          description: Não autorizado
+        '403':
+          description: Token não fornecido
+
   /perfil:
     post:
       summary: Cria um perfil de Au Pair

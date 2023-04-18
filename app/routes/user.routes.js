@@ -26,6 +26,12 @@ module.exports = function(app) {
     controller.deletarVaga
   );
 
+  app.put(
+    "/api/vaga/:id",
+    [authJwt.verifyToken],
+    controller.updateVaga
+  );
+
   app.get(
     "/api/delcandidatura",
     [authJwt.verifyToken],
