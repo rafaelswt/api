@@ -65,13 +65,13 @@ module.exports = function(app) {
   )
 
   app.get(
-    "/api/candidaturas",
+    "/api/vagas/candidaturas",
     [authJwt.verifyToken],
     controller.getCandidaturasByUserId
   )
 
   app.get(
-    "/api/aupair/candidaturas",
+    "/api/minhas-candidaturas",
     [authJwt.verifyToken],
     controller.getCandidaturasByAupairId
   )

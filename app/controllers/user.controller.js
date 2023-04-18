@@ -500,25 +500,55 @@ exports.getCandidaturasByUserId = async (req, res) => {
 
 exports.getCandidaturasByAupairId = async (req, res) => {
   try {
-    const candidaturas = await Vaga.find({
-      "candidaturas.aupairId": req.userId
-    }, {
-      candidaturas: {
-        $elemMatch: {
-          aupairId: req.userId
-        }
-      }
-    });
-
-    res.status(200).json({
-      candidaturas
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Ocorreu um erro ao buscar as candidaturas do Aupair."
-    });
+    const vagas = await Vaga.aggregate([
+      // Filtra vagas com candidaturas da aupair atual
+      {
+        $match: { "candidaturas.aupairId": mongoose.Types.ObjectId(req.userId) },
+      },
+      // Desconstrói o array "candidaturas" em documentos separados
+      { $unwind: "$candidaturas" },
+      // Filtra apenas as candidaturas da aupair atual
+      {
+        $match: { "candidaturas.aupairId": mongoose.Types.ObjectId(req.userId) },
+      },
+      // Junta as informações da vaga e da candidatura em um mesmo documento
+      {
+        $project: {
+          _id: 1,
+          escolaridade: 1,
+          idiomas: 1,
+          religiao: 1,
+          genero: 1,
+          nacionalidade: 1,
+          faixa_etaria: 1,
+          experiencia_trabalho: 1,
+          quantidade_criancas: 1,
+          receber_newsletter: 1,
+          data_disponibilidade: 1,
+          data_finalizacao_vaga: 1,
+          titulo_vaga: 1,
+          vaga_patrocinada: 1,
+          pais: 1,
+          estado_provincia: 1,
+          descricao: 1,
+          natacao: 1,
+          habilitacao: 1,
+          carro_exclusivo: 1,
+          views: 1,
+          user: 1,
+          resumo: 1,
+          passaporte: 1,
+          aupair: "$candidaturas.aupair",
+          candidatura: "$candidaturas",
+        },
+      },
+    ]);
+    res.json(vagas);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao recuperar vagas candidatadas" });
   }
+  
 };
 
 exports.match = (req, res) => {

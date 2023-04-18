@@ -581,7 +581,7 @@ paths:
         500:
           description: Erro interno do servidor
 
-  /candidaturas:
+  /vaga/candidaturas:
     get:
       summary: Retorna todas as candidaturas
       tags:
@@ -602,7 +602,7 @@ paths:
           description: "Candidaturas recuperadas com sucesso"
         401:
           $ref: "#/responses/UnauthorizedError"
-  /aupair/candidaturas:
+  /minhas-candidaturas:
     get:
       summary: Retorna todas as candidaturas da Aupair
       tags:
