@@ -322,7 +322,7 @@ paths:
           description: Token JWT de autenticação do usuário
         - name: body
           in: body
-          description: Parâmetros para a criação da vaga
+          description: Parâmetros para a alteração da vaga
           required: true
           schema:
             type: object
