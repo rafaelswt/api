@@ -225,6 +225,20 @@ exports.criarvaga = async (req, res) => {
       return res.status(403).json({ message: 'Você não tem permissão para criar uma vaga.' });
     }
 
+    let pais;
+
+    if (req.body.pais) {
+      if (req.body.pais === "br") {
+        pais = "Brasil";
+      } else if (req.body.pais === "usa") {
+        pais = "Estados Unidos";
+      } else {
+        pais = req.body.pais;
+      }
+    } else {
+      pais = "Não especificado";
+    }
+
 
     const vaga = new Vaga({
       escolaridade: req.body.escolaridade,
@@ -242,7 +256,7 @@ exports.criarvaga = async (req, res) => {
       data_finalizacao_vaga: req.body.data_finalizacao_vaga,
       titulo_vaga: req.body.titulo_vaga,
       vaga_patrocinada: req.body.vaga_patrocinada,
-      pais: req.body.pais,
+      pais: pais,
       estado_provincia: req.body.estado_provincia,
       quantidade_criancas: req.body.quantidade_criancas,
       descricao: req.body.descricao,
