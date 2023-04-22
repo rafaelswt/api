@@ -167,6 +167,8 @@ exports.vaga = (req, res) => {
     });
 }
 
+
+
 exports.candidaturas = (req, res) => {
   if (req.query.roles === "ROLE_FAMILY") {
     Vaga.find({})
@@ -908,4 +910,26 @@ exports.userprofile = (req, res) => {
 
       res.json(userProfile);
     });
+};
+exports.statusVaga = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const vaga = await Vaga.findById(id);
+    
+    if (!vaga) {
+      return res.status(404).json({ error: "Vaga não encontrada." });
+    }
+    
+    if (String(vaga.user) !== req.userId) {
+      return res.status(401).json({ error: "Usuário não autorizado." });
+    }
+
+    vaga.ativo = !vaga.ativo;
+    await vaga.save();
+    
+    return res.status(200).json(vaga);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Erro ao ativar/desativar a vaga." });
+  }
 };

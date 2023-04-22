@@ -97,4 +97,13 @@ module.exports = function(app) {
     [authJwt.verifyToken],
     controller.SendEmail
   );
+
+  app.put(
+    "/api/vaga/:id/toggle",
+    [authJwt.verifyToken],
+    controller.statusVaga
+  );
+
 };
+
+

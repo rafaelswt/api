@@ -347,7 +347,33 @@ paths:
           description: Não autorizado
         '403':
           description: Token não fornecido
-
+  /vagas/{id}/toggle:
+    put:
+      summary: Ativar ou desativar uma vaga.
+      tags:
+        - Minhas vagas
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID da vaga a ser ativada/desativada.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vaga ativada/desativada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/Vaga"
+        '400':
+          description: Erro na requisição
+        '401':
+          description: Não autorizado
+        '403':
+          description: Token não fornecido
   /perfil:
     post:
       summary: Cria um perfil de Au Pair
