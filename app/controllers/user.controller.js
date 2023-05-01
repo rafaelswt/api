@@ -92,8 +92,12 @@ exports.listarVagas = async (req, res) => {
     }
 
     if (req.userRoles.includes("ROLE_AUPAIR")) {
-      const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } })
-        .lean();
+      const vagas = await Vaga.find({
+        $and: [
+          { ativo: { $ne: false } },
+          { "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } }
+        ]
+      }).lean();
 
       if (!vagas) {
         return res.status(404).json({ message: "Nenhuma vaga encontrada." });
