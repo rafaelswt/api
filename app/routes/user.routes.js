@@ -92,12 +92,6 @@ module.exports = function(app) {
     controller.userprofile
   );
 
-  app.get(
-    "/api/email",
-    [authJwt.verifyToken],
-    controller.SendEmail
-  );
-
   app.put(
     "/api/vaga/:id/toggle",
     [authJwt.verifyToken],
