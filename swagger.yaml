@@ -467,12 +467,11 @@ paths:
           schema:
             type: string
           description: ID da vaga a ser atualizada
-        - in: header
-          name: Authorization
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
           required: true
-          schema:
-            type: string
-          description: Token JWT de autenticação do usuário
+          type: string
         - name: body
           in: body
           description: Parâmetros para a alteração da vaga
@@ -508,6 +507,11 @@ paths:
       security:
         - bearerAuth: []
       parameters:
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
         - in: path
           name: id
           required: true
