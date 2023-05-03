@@ -142,8 +142,6 @@ paths:
         description: Token de autenticação
         required: true
         type: string
-      security:
-        - jwt: []
       tags:
         - "User"
       summary: "Get user profile"
@@ -159,6 +157,48 @@ paths:
           $ref: "#/responses/UnauthorizedError"
         "404":
           $ref: "#/responses/NotFoundError"
+    put:
+          summary: Update user credentials
+          tags:
+            - User
+          parameters:
+          - name: x-access-token
+            in: header
+            description: Token de autenticação
+            required: true
+            type: string
+          requestBody:
+            description: User credentials to be updated
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    password:
+                      type: string
+                      minLength: 8
+                      description: New password for the user
+                    name:
+                      type: string
+                      description: New name for the user
+                  example:
+                    password: mynewpassword123
+                    name: John Smith
+          responses:
+            200:
+              description: Updated user credentials
+
+            400:
+              description: Bad request
+            401:
+              $ref: '#/responses/UnauthorizedError'
+            404:
+              description: User not found
+            500:
+              description: Internal server error
+
+    
 
   /forgot-password:
     post:
