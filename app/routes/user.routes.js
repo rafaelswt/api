@@ -96,6 +96,12 @@ module.exports = function(app) {
     controller.userprofile
   );
 
+  app.put(
+    "/api/userprofile",
+    [authJwt.verifyToken],
+    controller.updateUserCredentials
+  );
+
   app.patch(
     "/api/update-user",
     [authJwt.verifyToken],
