@@ -42,6 +42,10 @@ module.exports = function(app) {
     "/api/perfil",[authJwt.verifyToken], controller.createAupairProfile
   );
 
+  app.put(
+    "/api/perfil",[authJwt.verifyToken], controller.updateAupairProfile
+  );
+
   app.get(
     "/api/perfil",[authJwt.verifyToken], controller.getAupairProfile
   );

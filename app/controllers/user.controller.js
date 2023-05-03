@@ -392,6 +392,55 @@ exports.deleteAupairProfile = async (req, res) => {
   }
 };
 
+exports.updateAupairProfile = async (req, res) => {
+  try {
+    // Encontra o perfil da aupair pelo ID do usuário
+    const profile = await AupairProfile.findOne({ user: req.userId });
+
+    if (!profile) {
+      return res.status(404).json({ message: 'Perfil não encontrado.' });
+    }
+
+    // Verifica se o usuário tem permissão para editar a vaga
+    if (profile.user.toString() !== req.userId) {
+      return res.status(403).json({ message: 'Você não tem permissão para editar este perfil.' });
+    }
+
+    // Atualiza os atributos do perfil com os valores enviados na requisição
+    profile.telefone = req.body.telefone || profile.telefone;
+    profile.cep = req.body.cep || profile.cep;
+    profile.logradouro = req.body.logradouro || profile.logradouro;
+    profile.numero = req.body.numero || profile.numero;
+    profile.complemento = req.body.complemento || profile.complemento;
+    profile.cidade = req.body.cidade || profile.cidade;
+    profile.estado = req.body.estado || profile.estado;
+    profile.data_de_nascimento = req.body.data_de_nascimento || profile.data_de_nascimento;
+    profile.escolaridade = req.body.escolaridade || profile.escolaridade;
+    profile.idiomas = req.body.idiomas || profile.idiomas;
+    profile.religiao = req.body.religiao || profile.religiao;
+    profile.genero = req.body.genero || profile.genero;
+    profile.nacionalidade = req.body.nacionalidade || profile.nacionalidade;
+    profile.habilitacao = req.body.habilitacao || profile.habilitacao;
+    profile.quantidade_criancas = req.body.quantidade_criancas || profile.quantidade_criancas;
+    profile.experiencia_trabalho = req.body.experiencia_trabalho || profile.experiencia_trabalho;
+    profile.natacao = req.body.natacao || profile.natacao;
+    profile.carro_exclusivo = req.body.carro_exclusivo || profile.carro_exclusivo;
+    profile.receber_newsletter = req.body.receber_newsletter || profile.receber_newsletter;
+    profile.data_disponibilidade = req.body.data_disponibilidade || profile.data_disponibilidade;
+    profile.numero_identificacao_nacional = req.body.numero_identificacao_nacional || profile.numero_identificacao_nacional;
+    profile.tipo_documento = req.body.tipo_documento || profile.tipo_documento;
+
+    // Salva o perfil atualizado no banco de dados
+    const updatedProfile = await profile.save();
+
+    res.json(updatedProfile);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro ao atualizar o perfil.' });
+  }
+};
+
+
 exports.findMatches = (req, res) => {
   if (req.query.roles === "ROLE_FAMILY") {
     Vaga.find({ 'user.0': mongoose.Types.ObjectId(req.query.id), 'aupair': { $ne: [] } })

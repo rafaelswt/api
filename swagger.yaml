@@ -489,16 +489,17 @@ paths:
           description: Token não fornecido
   /perfil:
     parameters:
-      - in: header
-        name: Authorization
-        required: true
-        schema:
-          type: string
-        description: Token JWT de autenticação do usuário
+    - name: x-access-token
+      in: header
+      description: Token de autenticação
+      required: true
+      type: string
+    security:
+      - jwt: []
     post:
       summary: Cria um perfil de Au Pair.
       tags:
-        - Perfil
+      - Perfil
       requestBody:
         required: true
         content:
@@ -616,7 +617,7 @@ paths:
     get:
       summary: Recupera o perfil do Au Pair logado
       tags:
-        - Perfil
+      - Perfil
       security:
         - bearerAuth: []
       responses:
@@ -651,13 +652,10 @@ paths:
                   message:
                     type: string
                     example: Server Error
-
     delete:
       summary: Exclui o perfil do usuário logado
       tags:
-        - Perfil
-      security:
-        - BearerAuth: []
+      - Perfil
       responses:
         '200':
           description: Perfil excluído com sucesso
@@ -667,16 +665,101 @@ paths:
           description: Token não fornecido
         '404':
           description: Perfil não encontrado
+      /aupair-profile:
+    put:
+      summary: Atualiza o perfil da aupair
+      description: Atualiza os atributos do perfil da aupair com os valores enviados na requisição
+      tags:
+      - Perfil
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                message:
+                telefone:
                   type: string
-                  description: Mensagem opcional para inclusão no corpo da requisição
+                cep:
+                  type: string
+                logradouro:
+                  type: string
+                numero:
+                  type: string
+                complemento:
+                  type: string
+                cidade:
+                  type: string
+                estado:
+                  type: string
+                data_de_nascimento:
+                  type: string
+                  format: date
+                escolaridade:
+                  type: string
+                idiomas:
+                  type: array
+                  items:
+                    type: string
+                religiao:
+                  type: string
+                genero:
+                  type: string
+                nacionalidade:
+                  type: string
+                numero_identificacao_nacional:
+                  type: string
+                tipo_documento:
+                  type: string
+                habilitacao:
+                  type: boolean
+                quantidade_criancas:
+                  type: string
+                experiencia_trabalho:
+                  type: string
+                natacao:
+                  type: boolean
+                carro_exclusivo:
+                  type: boolean
+                receber_newsletter:
+                  type: boolean
+                data_disponibilidade:
+                  type: string
+                  format: date
+              example:
+                telefone: "(11) 1234-5678"
+                cep: "01234-567"
+                logradouro: "Rua Teste"
+                numero: "123"
+                complemento: "Apto. 456"
+                cidade: "São Paulo"
+                estado: "SP"
+                data_de_nascimento: "1995-05-02"
+                escolaridade: "Ensino Superior Completo"
+                idiomas: ["Inglês", "Espanhol"]
+                religiao: "Católica"
+                genero: "Feminino"
+                nacionalidade: "Brasileira"
+                numero_identificacao_nacional: "123.456.789-00"
+                tipo_documento: "CPF"
+                habilitacao: true
+                quantidade_criancas: "2"
+                experiencia_trabalho: "1"
+                natacao: true
+                carro_exclusivo: false
+                receber_newsletter: true
+                data_disponibilidade: "2023-06-01"
+      responses:
+        200:
+          description: Perfil da aupair atualizado com sucesso
+        400:
+          description: Atributos inválidos na requisição
+        403:
+          description: Usuário não tem permissão para editar este perfil
+        404:
+          description: Perfil da aupair não encontrado
+        500:
+          description: Erro ao atualizar o perfil da aupair
   /favoritar/{id}:
     post:
       summary: Favoritar uma vaga
