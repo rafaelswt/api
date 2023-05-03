@@ -687,6 +687,37 @@ exports.deletarCandidatura = async (req, res) => {
   }
 };
 
+exports.updateUserCredentials = async (req, res) => {
+  try {
+    const { password, name } = req.body;
+
+    // Find the user by their ID
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Update the user's email and/or password if provided
+
+    if (password) {
+      user.password = bcrypt.hashSync(password, 8);
+    }
+
+    if (name) {
+      user.name = name;
+    }
+
+    // Save the updated user in the database
+    const updatedUser = await user.save();
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error updating user credentials.' });
+  }
+};
+
 
 exports.match = (req, res) => {
   Candidatura.findById(req.query.candidaturaID)

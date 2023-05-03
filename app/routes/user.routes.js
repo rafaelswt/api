@@ -96,6 +96,12 @@ module.exports = function(app) {
     controller.userprofile
   );
 
+  app.patch(
+    "/api/update-user",
+    [authJwt.verifyToken],
+    controller.updateUserCredentials
+  );
+
   app.put(
     "/api/vaga/:id/toggle",
     [authJwt.verifyToken],
