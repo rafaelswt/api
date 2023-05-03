@@ -3,6 +3,7 @@ const { vaga, user, candidatura, familia_has_vaga } = require("../models");
 const db = require("../models");
 const User = db.user;
 const Vaga = db.vaga;
+var bcrypt = require("bcryptjs");
 const Visualizacao = db.visualizacao
 const Candidatura = db.candidatura;
 const mongoose = require('mongoose');
@@ -82,7 +83,6 @@ function obterFaixaEtaria(dataDeNascimento) {
   }
 }
 
-
 exports.listarVagas = async (req, res) => {
   try {
     if (req.userRoles.includes("ROLE_FAMILY")) {
@@ -154,7 +154,6 @@ exports.listarVagas = async (req, res) => {
   }
 }
 
-
 exports.vaga = (req, res) => {
   Vaga.findById(req.query.vagaID)
     .exec((err, vaga) => {
@@ -170,8 +169,6 @@ exports.vaga = (req, res) => {
       res.json(vaga);
     });
 }
-
-
 
 exports.candidaturas = (req, res) => {
   if (req.query.roles === "ROLE_FAMILY") {
@@ -887,6 +884,84 @@ exports.SendEmail = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao enviar e-mails" });
+  }
+};
+
+
+exports.ForgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+  
+    // Verifica se o email existe no banco de dados
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Email não encontrado' });
+    }
+  
+    // Cria um código de redefinição de senha e salva no banco de dados
+    const resetCode = Math.floor(100000 + Math.random() * 900000);
+    user.passwordResetCode = resetCode.toString();
+    user.passwordResetExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+    await user.save({ validateBeforeSave: false });
+  
+    // Envia um email com o código de redefinição de senha
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+  
+    const mailOptions = {
+      from: 'Aupamatch <aupamatch.webbstars@gmail.com>',
+      to: user.email,
+      subject: 'Redefinir senha',
+      text: `Clique neste link para redefinir sua senha: ${resetCode}`,
+    };
+  
+    await transporter.sendMail(mailOptions);
+  
+    res.status(200).json({
+      message: 'Um email foi enviado com um código para redefinir sua senha',
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+};
+
+// Rota para redefinir a senha
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, code, password } = req.body;
+
+    // Verifica se o email existe no banco de dados
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Email não encontrado' });
+    }
+
+    // Verifica se o código de redefinição de senha é válido
+    if (user.passwordResetCode !== code) {
+      return res.status(400).json({ message: 'Código inválido' });
+    }
+
+    // Verifica se o código de redefinição de senha expirou
+    if (user.passwordResetExpires < Date.now()) {
+      return res.status(400).json({ message: 'Código expirado' });
+    }
+
+    // Define a nova senha e limpa o código de redefinição de senha
+    user.password = bcrypt.hashSync(password, 8),
+    user.passwordResetCode = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'Senha redefinida com sucesso' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 

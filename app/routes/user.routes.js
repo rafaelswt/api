@@ -98,6 +98,16 @@ module.exports = function(app) {
     controller.statusVaga
   );
 
+  app.post(
+    "/api/forgot-password",
+    controller.ForgotPassword
+  );
+
+  app.patch(
+    "/api/reset-password/",
+    controller.resetPassword
+  );
+
 };
 
 
