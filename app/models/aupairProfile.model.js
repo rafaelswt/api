@@ -43,9 +43,7 @@ const AupairProfileSchema = new mongoose.Schema({
     default: null
   },
   numero_identificacao_nacional: String,
-  resumo: String,
-  passaporte: String,
-  habilitacao_pid: String,
+  tipo_documento: String,
   firstLogin: {
     type: Boolean,
     default: false

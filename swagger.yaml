@@ -134,11 +134,37 @@ paths:
           description: Erro interno do servidor
       security: []
 
+  /userprofile:
+    get:
+      parameters:
+      - name: x-access-token
+        in: header
+        description: Token de autenticação
+        required: true
+        type: string
+      security:
+        - jwt: []
+      tags:
+        - "User"
+      summary: "Get user profile"
+      description: "Returns the profile of the user authenticated by the provided JWT token."
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/UserProfileResponse"
+        "401":
+          $ref: "#/responses/UnauthorizedError"
+        "404":
+          $ref: "#/responses/NotFoundError"
+
   /forgot-password:
     post:
       summary: Envio de código de redefinição de senha
       tags:
-      - User
+      - Recuperar Senha
       requestBody:
         content:
           application/json:
@@ -190,7 +216,7 @@ paths:
     patch:
       summary: Redefinição de senha
       tags:
-      - User
+      - Recuperar Senha
       requestBody:
         content:
           application/json:
@@ -244,32 +270,7 @@ paths:
                 properties:
                   message:
                     type: string
-
-  /userprofile:
-    get:
-      parameters:
-      - name: x-access-token
-        in: header
-        description: Token de autenticação
-        required: true
-        type: string
-      security:
-        - jwt: []
-      tags:
-        - "User"
-      summary: "Get user profile"
-      description: "Returns the profile of the user authenticated by the provided JWT token."
-      produces:
-        - "application/json"
-      responses:
-        "200":
-          description: "Successful operation"
-          schema:
-            $ref: "#/definitions/UserProfileResponse"
-        "401":
-          $ref: "#/responses/UnauthorizedError"
-        "404":
-          $ref: "#/responses/NotFoundError"
+    
   /vagas:
     get:
       summary: "Listar vagas"
@@ -487,31 +488,123 @@ paths:
         '403':
           description: Token não fornecido
   /perfil:
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        description: Token JWT de autenticação do usuário
     post:
-      summary: Cria um perfil de Au Pair
+      summary: Cria um perfil de Au Pair.
       tags:
         - Perfil
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: x-access-token
-          in: header
-          description: Token de autenticação
-          required: true
-          type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/definitions/Aupair'
+              type: object
+              properties:
+                telefone:
+                  type: string
+                cep:
+                  type: string
+                logradouro:
+                  type: string
+                numero:
+                  type: string
+                complemento:
+                  type: string
+                cidade:
+                  type: string
+                estado:
+                  type: string
+                data_de_nascimento:
+                  type: string
+                  format: date
+                escolaridade:
+                  type: string
+                idiomas:
+                  type: array
+                  items:
+                    type: string
+                religiao:
+                  type: string
+                genero:
+                  type: string
+                nacionalidade:
+                  type: string
+                numero_identificacao_nacional:
+                  type: string
+                tipo_documento:
+                  type: string
+                habilitacao:
+                  type: boolean
+                quantidade_criancas:
+                  type: string
+                experiencia_trabalho:
+                  type: string
+                natacao:
+                  type: boolean
+                carro_exclusivo:
+                  type: boolean
+                receber_newsletter:
+                  type: boolean
+                data_disponibilidade:
+                  type: string
+                  format: date
+              example:
+                telefone: "(11) 1234-5678"
+                cep: "01234-567"
+                logradouro: "Rua Teste"
+                numero: "123"
+                complemento: "Apto. 456"
+                cidade: "São Paulo"
+                estado: "SP"
+                data_de_nascimento: "1995-05-02"
+                escolaridade: "Ensino Superior Completo"
+                idiomas: ["Inglês", "Espanhol"]
+                religiao: "Católica"
+                genero: "Feminino"
+                nacionalidade: "Brasileira"
+                numero_identificacao_nacional: "123.456.789-00"
+                tipo_documento: "CPF"
+                habilitacao: true
+                quantidade_criancas: "2"
+                experiencia_trabalho: "1"
+                natacao: true
+                carro_exclusivo: false
+                receber_newsletter: true
+                data_disponibilidade: "2023-06-01"
       responses:
         '201':
           description: Perfil criado com sucesso
           content:
             application/json:
-              schema:
-                $ref: '#/definitions/Aupair'
+              example:
+                telefone: "(11) 1234-5678"
+                cep: "01234-567"
+                logradouro: "Rua Teste"
+                numero: "123"
+                complemento: "Apto. 456"
+                cidade: "São Paulo"
+                estado: "SP"
+                data_de_nascimento: "1995-05-02"
+                escolaridade: "Ensino Superior Completo"
+                idiomas: ["Inglês", "Espanhol"]
+                religiao: "Católica"
+                genero: "Feminino"
+                nacionalidade: "Brasileira"
+                numero_identificacao_nacional: "123.456.789-00"
+                tipo_documento: "CPF"
+                habilitacao: true
+                quantidade_criancas: "2"
+                experiencia_trabalho: "1"
+                natacao: true
+                carro_exclusivo: false
+                receber_newsletter: true
+                data_disponibilidade: "2023-06-01"
         '400':
           description: Requisição inválida
         '401':
@@ -526,12 +619,6 @@ paths:
         - Perfil
       security:
         - bearerAuth: []
-      parameters:
-        - name: x-access-token
-          in: header
-          description: Token de autenticação
-          required: true
-          type: string
       responses:
         '200':
           description: Retorna o perfil do Au Pair
@@ -580,8 +667,6 @@ paths:
           description: Token não fornecido
         '404':
           description: Perfil não encontrado
-      servers:
-        - url: http://localhost:3000
       requestBody:
         required: false
         content:
