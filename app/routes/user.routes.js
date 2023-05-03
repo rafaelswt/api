@@ -33,6 +33,12 @@ module.exports = function(app) {
   );
 
   app.get(
+    "/api/vagas/:id",
+    [authJwt.verifyToken],
+    controller.consultarVagaPorId
+  );
+
+  app.get(
     "/api/delcandidatura",
     [authJwt.verifyToken],
     controller.deleteCandidatura

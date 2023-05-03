@@ -536,6 +536,19 @@ exports.updateVaga = async(req, res) => {
     res.status(500).json({ message: 'Erro ao atualizar a vaga.' });
   }
 }
+exports.consultarVagaPorId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const vaga = await Vaga.findOne({ _id: id, user: req.userId }).populate('user');
+    if (!vaga) {
+      return res.status(404).json({ mensagem: 'Vaga não encontrada.' });
+    }
+    res.json(vaga);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensagem: 'Erro ao consultar a vaga.' });
+  }
+};
 
 exports.deleteCandidatura = async (req, res) => {
   try {
@@ -717,7 +730,6 @@ exports.updateUserCredentials = async (req, res) => {
     res.status(500).json({ message: 'Error updating user credentials.' });
   }
 };
-
 
 exports.match = (req, res) => {
   Candidatura.findById(req.query.candidaturaID)
