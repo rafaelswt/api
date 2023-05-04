@@ -126,6 +126,9 @@ paths:
                   accessToken:
                     type: string
                     description: Token de acesso para o usuário
+                  firstLogin:
+                    type: boolean
+                    description: Primeiro Login
         "401":
           description: Credenciais inválidas
         "404":

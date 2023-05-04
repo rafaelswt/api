@@ -108,6 +108,8 @@ exports.signup = (req, res) => {
   });
 };
 
+const AupairProfile = require("../models/aupairProfile.model.js");
+
 exports.signin = (req, res) => {
   User.findOne({
     email: req.body.email
@@ -145,12 +147,39 @@ exports.signin = (req, res) => {
         expiresIn: 86400 // 24 hours
       });
 
-      res.status(200).send({
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        roles: authorities,
-        accessToken: token
+      AupairProfile.findOne({ user: user._id }, (err, profile) => {
+        if (err) {
+          res.status(500).send({ message: err });
+          return;
+        }
+
+        var firstLogin = true;
+
+        if (profile) {
+          firstLogin = false;
+        }
+
+        if(authorities == "ROLE_AUPAIR")
+        {
+            res.status(200).send({
+              id: user._id,
+              email: user.email,
+              name: user.name,
+              roles: authorities,
+              accessToken: token,
+              firstLogin: firstLogin
+            });
+        }
+        else{
+          res.status(200).send({
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            roles: authorities,
+            accessToken: token,
+          });
+        }
       });
     });
 };
+
