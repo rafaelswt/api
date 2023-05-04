@@ -455,7 +455,6 @@ paths:
                 type: string
                 description: Mensagem de erro
                 example: Vaga não encontrada
-  /vagas/{id}:
     put:
       summary: Atualiza uma vaga existente
       tags:
@@ -485,9 +484,6 @@ paths:
               descricao:
                 type: string
                 example: "Nova descrição para a vaga"
-      
-
-      
       responses:
         '200':
           description: Vaga alterada com sucesso
@@ -499,48 +495,7 @@ paths:
           description: Não autorizado
         '403':
           description: Token não fornecido
-    get:
-      summary: Consultar uma vaga por ID
-      tags:
-        - "Minhas vagas"
-      description: Retorna uma única vaga correspondente ao ID fornecido, desde que a vaga tenha sido criada pelo usuário autenticado
-      parameters:
-        - in: path
-          name: id
-          description: ID da vaga a ser consultada
-          required: true
-          schema:
-            type: string
-        - name: x-access-token
-          in: header
-          description: Token de autenticação
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Vaga encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/definitions/Vaga'
-        '400':
-          description: Erro na requisição
-        '401':
-          description: Não autorizado
-        '403':
-          description: Token não fornecido
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-
-    
-  /vagas/{id}/toggle:
+  /vaga/{id}/toggle:
     put:
       summary: Ativar ou desativar uma vaga.
       tags:
@@ -989,7 +944,46 @@ paths:
 
         500:
           description: Erro ao buscar vagas
-          
+  /vagas/{id}:
+    get:
+      summary: Consultar uma vaga por ID
+      tags:
+        - "Minhas vagas"
+      description: Retorna uma única vaga correspondente ao ID fornecido, desde que a vaga tenha sido criada pelo usuário autenticado
+      parameters:
+        - in: path
+          name: id
+          description: ID da vaga a ser consultada
+          required: true
+          schema:
+            type: string
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Vaga encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Vaga'
+        '400':
+          description: Erro na requisição
+        '401':
+          description: Não autorizado
+        '403':
+          description: Token não fornecido
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string       
   /candidatar:
     get:
       summary: Cria uma nova candidatura à vaga
