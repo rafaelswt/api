@@ -1113,6 +1113,7 @@ exports.userprofile = (req, res) => {
       res.json(userProfile);
     });
 };
+
 exports.loginHistory = async(req, res) => {
   try {
     const userId = req.userId;
@@ -1127,6 +1128,8 @@ exports.loginHistory = async(req, res) => {
     res.status(500).send({ message: "Erro interno do servidor" });
   }
 };
+
+
 
 exports.statusVaga = async (req, res) => {
   try {
