@@ -1,5 +1,21 @@
 const mongoose = require("mongoose");
 
+const loginHistorySchema = new mongoose.Schema({
+  date: {
+    type: Date,
+    required: true,
+    default: Date.now
+  },
+  ipAddress: {
+    type: String,
+    required: true
+  },
+  location: {
+    type: String,
+    required: true
+  }
+});
+
 const User = mongoose.model(
   "User",
   new mongoose.Schema({
@@ -17,7 +33,8 @@ const User = mongoose.model(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Role"
       }
-    ]
+    ],
+    loginHistory: [loginHistorySchema]
   })
 );
 

@@ -102,6 +102,12 @@ module.exports = function(app) {
     controller.userprofile
   );
 
+  app.get(
+    "/api/login-history",
+    [authJwt.verifyToken],
+    controller.loginHistory
+  );
+
   app.put(
     "/api/userprofile",
     [authJwt.verifyToken],
