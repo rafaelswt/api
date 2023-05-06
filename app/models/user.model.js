@@ -8,7 +8,10 @@ const User = mongoose.model(
     password: String,
     passwordResetExpires: Date,
     passwordResetCode: String,
-
+    passwordResetCodeValid: {
+      type: Boolean,
+      default: false
+    },
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,

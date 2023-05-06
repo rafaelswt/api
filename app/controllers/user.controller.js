@@ -975,8 +975,15 @@ exports.SendEmail = async (req, res) => {
   }
 };
 
+const generateResetCode = () => {
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expires = new Date();
+  expires.setMinutes(expires.getMinutes() + 30); // código válido por 30 minutos
+  return { code, expires, isValid: false }; // retorna também a informação de validade
+};
 
-exports.ForgotPassword = async (req, res) => {
+
+exports.sendResetToken = async (req, res) => {
   try {
     const { email } = req.body;
   
@@ -986,12 +993,12 @@ exports.ForgotPassword = async (req, res) => {
       return res.status(404).json({ message: 'Email não encontrado' });
     }
   
-    // Cria um código de redefinição de senha e salva no banco de dados
-    const resetCode = Math.floor(100000 + Math.random() * 900000);
-    user.passwordResetCode = resetCode.toString();
-    user.passwordResetExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
-    await user.save({ validateBeforeSave: false });
-  
+    const { code, expires, isValid } = generateResetCode();
+    user.passwordResetCode = code;
+    user.passwordResetExpires = expires;
+    user.passwordResetCodeValid = isValid; // salva a informação de validade
+    await user.save();
+   
     // Envia um email com o código de redefinição de senha
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -1000,12 +1007,14 @@ exports.ForgotPassword = async (req, res) => {
         pass: process.env.EMAIL_PASS,
       },
     });
+
+    console.log(code)
   
     const mailOptions = {
       from: 'Aupamatch <aupamatch.webbstars@gmail.com>',
       to: user.email,
       subject: 'Redefinir senha',
-      text: `Clique neste link para redefinir sua senha: ${resetCode}`,
+      text: `Codigo para redefinir sua senha: ${code}`,
     };
   
     await transporter.sendMail(mailOptions);
@@ -1019,10 +1028,9 @@ exports.ForgotPassword = async (req, res) => {
   }
 };
 
-// Rota para redefinir a senha
-exports.resetPassword = async (req, res) => {
+exports.validateResetCode = async (req, res) => {
   try {
-    const { email, code, password } = req.body;
+    const { email, code } = req.body;
 
     // Verifica se o email existe no banco de dados
     const user = await User.findOne({ email });
@@ -1030,18 +1038,45 @@ exports.resetPassword = async (req, res) => {
       return res.status(404).json({ message: 'Email não encontrado' });
     }
 
-    // Verifica se o código de redefinição de senha é válido
+    // Verifica se o code de reset de senha é válido
     if (user.passwordResetCode !== code) {
+      return res.status(400).json({ message: 'Code inválido' });
+    }
+
+    // Verifica se o code de reset de senha expirou
+    if (user.passwordResetExpires < Date.now()) {
+      return res.status(400).json({ message: 'Code expirado' });
+    }
+
+    // Atualiza o campo passwordResetCodeValid para true
+    user.passwordResetCodeValid = true;
+    await user.save();
+
+    res.status(200).json({ message: 'Code válido' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+};
+
+// Rota para redefinir a senha
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Verifica se o email existe no banco de dados
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Email não encontrado' });
+    }
+
+    if (!user.passwordResetCodeValid) {
       return res.status(400).json({ message: 'Código inválido' });
     }
 
-    // Verifica se o código de redefinição de senha expirou
-    if (user.passwordResetExpires < Date.now()) {
-      return res.status(400).json({ message: 'Código expirado' });
-    }
-
     // Define a nova senha e limpa o código de redefinição de senha
-    user.password = bcrypt.hashSync(password, 8),
+    user.passwordResetCodeValid = false; // código utilizado, invalida o código
+    user.password = bcrypt.hashSync(password, 8);
     user.passwordResetCode = undefined;
     user.passwordResetExpires = undefined;
     await user.save();

@@ -121,14 +121,21 @@ module.exports = function(app) {
   );
 
   app.post(
-    "/api/forgot-password",
-    controller.ForgotPassword
+    "/api/send-token",
+    controller.sendResetToken
+  );
+
+  app.post(
+    "/api/validate-token/",
+    controller.validateResetCode
   );
 
   app.patch(
     "/api/reset-password/",
     controller.resetPassword
   );
+
+  
 
 };
 
