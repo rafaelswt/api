@@ -567,6 +567,30 @@ paths:
           description: Não autorizado
         '403':
           description: Token não fornecido
+  /login-history:
+    get:
+      tags:
+        - "User"
+      summary: Obtém o histórico de login do usuário autenticado
+      parameters:
+      - name: x-access-token
+        in: header
+        description: Token de autenticação
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoginHistory'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        500:
+          $ref: '#/components/responses/InternalServerError'
 
   /perfil:
     parameters:
@@ -1391,12 +1415,34 @@ components:
           type: string
           description: The error message
       required:
-        - message
+        - message[]
+    LoginHistory:
+      type: object
+      properties:
+        _id:
+          type: string
+        date:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+        location:
+          type: string
+      required:
+        - date
+        - ipAddress
+        - location
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Não autorizado
+    InternalServerError:
+      description: Erro interno do servidor
 
 responses:
   UnauthorizedError:
