@@ -146,6 +146,7 @@ exports.signin = async (req, res) => {
 
     // Obtém a localização do usuário a partir do endereço IP
     const ipAddress = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    console.log(ipAddress)
     const ipstackApiKey = process.env.IPSTACK_API; // substitua pela sua API key do IP Geolocation API
     const ipstackApiUrl = `http://api.ipstack.com/${ipAddress}?access_key=${ipstackApiKey}`;
     const response = await axios.get(ipstackApiUrl);
