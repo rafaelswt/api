@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const AupairProfile = db.aupairProfile;
 mongoose.Promise = global.Promise;
 const nodemailer = require("nodemailer");
+const paypal = require('paypal-rest-sdk');
 
 async function calcularScore(vaga, aupair) {
   const scoreFields = ["escolaridade", "idiomas", "religiao", "quantidade_criancas", "experiencia_trabalho", "genero", "nacionalidade", "habilitacao", "carro_exclusivo", "natacao", "faixa_etaria"];
@@ -1153,3 +1154,58 @@ exports.statusVaga = async (req, res) => {
     return res.status(500).json({ error: "Erro ao ativar/desativar a vaga." });
   }
 };
+
+paypal.configure({
+  mode: 'sandbox',
+  client_id: process.env.CLIENT_ID,
+  client_secret: process.env.CLIENT_SECRET
+});
+
+exports.pagamento = (req, res) => {
+  const paymentData = {
+    intent: 'sale',
+    payer: {
+      payment_method: 'paypal'
+    },
+    redirect_urls: {
+      return_url: 'http://localhost:8080/success',
+      cancel_url: 'http://localhost:8080/cancel'
+    },
+    transactions: [{
+      item_list: {
+        items: [{
+          name: 'Product Name',
+          sku: '001',
+          price: '10.00',
+          currency: 'USD',
+          quantity: 1
+        }]
+      },
+      amount: {
+        currency: 'USD',
+        total: '10.00'
+      },
+      description: 'Description of the product'
+    }]
+  };
+
+  paypal.payment.create(paymentData, (error, payment) => {
+    if (error) {
+      console.error(error);
+      res.sendStatus(500);
+    } else {
+      const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
+      res.redirect(approvalUrl);
+    }
+  });
+};
+
+
+
+
+
+
+
+
+
+
