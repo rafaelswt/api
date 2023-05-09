@@ -1207,7 +1207,7 @@ exports.pagamentoFamilia = (req, res) => {
   let baseUrl = '';
 
   if (process.env.NODE_ENV === 'production') {
-    baseUrl = 'https://aupamatch-api3.render.com/';
+    baseUrl = 'https://aupamatch-api3.onrender.com/';
   } else {
     baseUrl = 'http://localhost:8080/';
   }
