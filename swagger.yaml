@@ -190,10 +190,6 @@ paths:
       responses:
         '200':
           description: Usuário atualizado com sucesso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '400':
           description: Solicitação malformada, algum dos atributos não fornecidos
         '401':
