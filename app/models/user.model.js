@@ -16,6 +16,22 @@ const loginHistorySchema = new mongoose.Schema({
   }
 });
 
+const purchaseHistorySchema = new mongoose.Schema({
+  date: {
+    type: Date,
+    required: true,
+    default: Date.now
+  },
+  product: {
+    type: String,
+    required: true
+  },
+  value: {
+    type: Number,
+    required: true
+  }
+});
+
 const User = mongoose.model(
   "User",
   new mongoose.Schema({
@@ -28,13 +44,15 @@ const User = mongoose.model(
       type: Boolean,
       default: false
     },
+    pago: Boolean,
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Role"
       }
     ],
-    loginHistory: [loginHistorySchema]
+    loginHistory: [loginHistorySchema],
+    purchaseHistory: [purchaseHistorySchema]
   })
 );
 

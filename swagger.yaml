@@ -1174,7 +1174,95 @@ paths:
                 properties:
                   message:
                     type: string
+  /pagamento/familia:
+    post:
+      tags:
+        - "Pagamento"
+      summary: Iniciar pagamento de vaga patrocinada
+      description: |
+        Endpoint utilizado para iniciar o pagamento de uma vaga patrocinada.
 
+        **Credenciais de usuário de teste:**
+        E-mail: sb-p7r5n25931191@personal.example.com
+        Senha: G8B>w)3s)
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+      responses:
+        '200':
+          description: URL de aprovação do pagamento
+          schema:
+            type: object
+            properties:
+              approvalUrl:
+                type: string
+                description: URL de aprovação do pagamento
+                example: https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-ABCD1234567890
+        '500':
+          description: Erro interno do servidor
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Mensagem de erro
+  /compra-history:
+    get:
+      summary: Obter histórico de compras do usuário
+      tags:
+        - "Pagamento"
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+      description: Endpoint utilizado para obter o histórico de compras do usuário autenticado.
+      responses:
+        '200':
+          description: Histórico de compras do usuário
+          schema:
+            type: object
+            properties:
+              purchaseHistory:
+                type: array
+                description: Lista de compras do usuário
+                items:
+                  type: object
+                  properties:
+                    product:
+                      type: string
+                      description: Nome do produto
+                      example: Tênis Nike Air Max
+                    date:
+                      type: string
+                      description: Data da compra
+                      example: 2022-05-08T15:31:27.856Z
+                    price:
+                      type: number
+                      description: Preço do produto na data da compra
+                      example: 299.99
+        '401':
+          description: Usuário não autenticado
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensagem de erro
+                example: Usuário não autenticado
+        '500':
+          description: Erro interno do servidor
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensagem de erro
+                example: Erro interno do servidor
 definitions:
   Vaga:
     type: object

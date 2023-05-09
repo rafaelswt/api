@@ -1,6 +1,5 @@
 const { authJwt, verifySignUp } = require("../middlewares");
 const controller = require("../controllers/user.controller");
-const paypal = require('paypal-rest-sdk');
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -142,12 +141,27 @@ module.exports = function(app) {
     controller.resetPassword
   );
 
-  app.get(
-    "/api/pagamento",
-    controller.pagamento
+  app.post(
+    "/api/pagamento/familia",
+    [authJwt.verifyToken],
+    controller.pagamentoFamilia
   );
 
+  app.get(
+    "/api/success",
+    controller.success
+  );
 
+  app.get(
+    "/api/cancel",
+    controller.cancel
+  );
+
+  app.get(
+    "/api/compra-history",
+    [authJwt.verifyToken],
+    controller.getCompraHistory
+  );
 };
 
 

@@ -1130,8 +1130,6 @@ exports.loginHistory = async(req, res) => {
   }
 };
 
-
-
 exports.statusVaga = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1161,31 +1159,83 @@ paypal.configure({
   client_secret: process.env.CLIENT_SECRET
 });
 
-exports.pagamento = (req, res) => {
+// controller for handling the cancel URL
+exports.cancel = (req, res) => {
+  res.send('Payment cancelled');
+};
+
+// controller for handling the return URL
+exports.success = (req, res) => {
+  const paymentId = req.query.paymentId;
+  const payerId = req.query.PayerID;
+  const details = { 'payer_id': payerId };
+
+  paypal.payment.execute(paymentId, details, (error, payment) => {
+    if (error) {
+      console.error(error);
+      res.status(500).send('Error processing payment');
+    } else {
+      // payment successful, update your database or perform any other required action
+      const userId = payment.transactions[0].custom; // get the ID of the user from the custom field
+      // update the user's payment status in the database
+      User.findOneAndUpdate(
+        { _id: userId },
+        { 
+          pago: true,
+          $push: { // adicione uma entrada ao array de histórico de compras
+            purchaseHistory: {
+              product: payment.transactions[0].item_list.items[0].name,
+              value: parseFloat(payment.transactions[0].amount.total)
+            }
+          }
+        },
+        { new: true },
+        (err, user) => {
+          if (err) {
+            console.error(err);
+            res.status(500).send('Error processing payment');
+          } else {
+            res.send('Payment successful');
+          }
+        }
+      );
+    }
+  });
+};
+
+exports.pagamentoFamilia = (req, res) => {
+  let baseUrl = '';
+
+  if (process.env.NODE_ENV === 'production') {
+    baseUrl = 'https://aupamatch-api3.render.com/';
+  } else {
+    baseUrl = 'http://localhost:8080/';
+  }
   const paymentData = {
     intent: 'sale',
     payer: {
       payment_method: 'paypal'
     },
     redirect_urls: {
-      return_url: 'http://localhost:8080/success',
-      cancel_url: 'http://localhost:8080/cancel'
+      return_url: `${baseUrl}api/success`,
+      cancel_url: `${baseUrl}api/cancel`
     },
     transactions: [{
       item_list: {
         items: [{
-          name: 'Product Name',
+          name: 'Vaga Patrocinada',
           sku: '001',
-          price: '10.00',
-          currency: 'USD',
+          price: '25.00',
+          currency: 'BRL',
           quantity: 1
         }]
       },
       amount: {
-        currency: 'USD',
-        total: '10.00'
+        currency: 'BRL',
+        total: '25.00'
       },
-      description: 'Description of the product'
+      description: 'Patrocine uma vaga para que ela fique no topo do nosso site',
+      custom: req.userId // add the ID of the user to the custom field
     }]
   };
 
@@ -1195,10 +1245,27 @@ exports.pagamento = (req, res) => {
       res.sendStatus(500);
     } else {
       const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
-      res.redirect(approvalUrl);
+      res.json({ approvalUrl });;
     }
   });
 };
+
+exports.getCompraHistory = async (req, res) => {
+  
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send({ message: "Usuário não encontrado" });
+    }
+    const compraHistory = user.purchaseHistory;
+    res.status(200).send(compraHistory);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Erro interno do servidor" });
+  }
+};
+
 
 
 

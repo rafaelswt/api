@@ -18,6 +18,7 @@ app.use(helmet.contentSecurityPolicy({
   }
 }));
 
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 var corsOptions = {
@@ -33,6 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const db = require("./app/models");
 const Role = db.role;
+
 
 db.mongoose
   .connect(process.env.MONGODB_URI || `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`, {
@@ -58,11 +60,13 @@ scheduler.start();
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 
+
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
+
 
 function initial() {
   Role.estimatedDocumentCount((err, count) => {
