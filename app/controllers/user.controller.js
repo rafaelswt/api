@@ -243,7 +243,6 @@ exports.criarvaga = async (req, res) => {
       pais = "Não especificado";
     }
 
-
     const vaga = new Vaga({
       escolaridade: req.body.escolaridade,
       idiomas: req.body.idiomas,
@@ -703,7 +702,7 @@ exports.deletarCandidatura = async (req, res) => {
 
 exports.updateUserCredentials = async (req, res) => {
   try {
-    const { password, name } = req.body;
+    const { password, name, currentPassword } = req.body;
 
     // Find the user by their ID
     const user = await User.findById(req.userId);
@@ -712,12 +711,17 @@ exports.updateUserCredentials = async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    // Update the user's email and/or password if provided
+    // Verify if the current password is correct
 
+    const isPasswordValid = bcrypt.compareSync(currentPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid current password.' });
+    }
+
+    // Update the user's email and/or password if provided
     if (password) {
       user.password = bcrypt.hashSync(password, 8);
     }
-
     if (name) {
       user.name = name;
     }
@@ -731,6 +735,7 @@ exports.updateUserCredentials = async (req, res) => {
     res.status(500).json({ message: 'Error updating user credentials.' });
   }
 };
+
 
 exports.match = (req, res) => {
   Candidatura.findById(req.query.candidaturaID)
@@ -1195,7 +1200,12 @@ exports.success = (req, res) => {
             console.error(err);
             res.status(500).send('Error processing payment');
           } else {
-            res.send('Payment successful');
+            const message = 'Payment successful. You will be redirected in 3 seconds.';
+            res.write(`<p>${message}</p>`);
+            console.log('Redirecting to https://www.aupamatch.com/post_job in 3 seconds...');
+            setTimeout(() => {
+              res.redirect('https://www.aupamatch.com/post_job');
+            }, 3000);
           }
         }
       );
@@ -1225,16 +1235,16 @@ exports.pagamentoFamilia = (req, res) => {
         items: [{
           name: 'Vaga Patrocinada',
           sku: '001',
-          price: '25.00',
+          price: '100.00',
           currency: 'BRL',
           quantity: 1
         }]
       },
       amount: {
         currency: 'BRL',
-        total: '25.00'
+        total: '100.00'
       },
-      description: 'Patrocine uma vaga para que ela fique no topo do nosso site',
+      description: 'Ative a opção de publicador de vaga',
       custom: req.userId // add the ID of the user to the custom field
     }]
   };
