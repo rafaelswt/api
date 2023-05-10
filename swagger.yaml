@@ -1055,6 +1055,9 @@ paths:
                 type: string
                 description: URL de aprovação do pagamento
                 example: https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-ABCD1234567890
+        '400':
+          description: Pagamento ja foi efetuado
+
         '500':
           description: Erro interno do servidor
           schema:
