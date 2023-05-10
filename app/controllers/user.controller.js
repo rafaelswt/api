@@ -716,6 +716,10 @@ exports.updateUserCredentials = async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'A senha deve ter pelo menos 8 caracteres' });
+    }
+
     // Verify if the current password is correct
 
     const isPasswordValid = bcrypt.compareSync(currentPassword, user.password);
@@ -1019,8 +1023,6 @@ exports.sendResetToken = async (req, res) => {
       },
     });
 
-    console.log(code)
-  
     const mailOptions = {
       from: 'Aupamatch <aupamatch.webbstars@gmail.com>',
       to: user.email,
@@ -1199,7 +1201,6 @@ exports.success = (req, res) => {
   const payerId = req.query.PayerID;
   const details = { 'payer_id': payerId };
 
-  console.log(details)
 
   paypal.payment.execute(paymentId, details, (error, payment) => {
     if (error) {
