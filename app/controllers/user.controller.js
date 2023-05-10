@@ -431,6 +431,7 @@ exports.updateAupairProfile = async (req, res) => {
     profile.data_disponibilidade = req.body.data_disponibilidade || profile.data_disponibilidade;
     profile.numero_identificacao_nacional = req.body.numero_identificacao_nacional || profile.numero_identificacao_nacional;
     profile.tipo_documento = req.body.tipo_documento || profile.tipo_documento;
+    profile.passaporte = req.body.passaporte || profile.passaporte;
 
     // Salva o perfil atualizado no banco de dados
     const updatedProfile = await profile.save();
