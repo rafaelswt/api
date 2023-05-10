@@ -292,6 +292,7 @@ exports.createAupairProfile = async (req, res) => {
 
   try {
     const {
+      nome_completo,
       telefone,
       cep,
       logradouro,
@@ -325,6 +326,7 @@ exports.createAupairProfile = async (req, res) => {
     }
 
     const newAupair = new AupairProfile({
+      nome_completo,
       telefone,
       cep,
       logradouro,
@@ -409,6 +411,7 @@ exports.updateAupairProfile = async (req, res) => {
     }
 
     // Atualiza os atributos do perfil com os valores enviados na requisição
+    profile.nome_completo = req.body.nome_completo || profile.nome_completo;
     profile.telefone = req.body.telefone || profile.telefone;
     profile.cep = req.body.cep || profile.cep;
     profile.logradouro = req.body.logradouro || profile.logradouro;

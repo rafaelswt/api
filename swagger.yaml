@@ -609,83 +609,9 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                telefone:
-                  type: string
-                cep:
-                  type: string
-                logradouro:
-                  type: string
-                numero:
-                  type: string
-                complemento:
-                  type: string
-                cidade:
-                  type: string
-                estado:
-                  type: string
-                data_de_nascimento:
-                  type: string
-                  format: date
-                escolaridade:
-                  type: string
-                idiomas:
-                  type: array
-                  items:
-                    type: string
-                religiao:
-                  type: string
-                genero:
-                  type: string
-                nacionalidade:
-                  type: string
-                numero_identificacao_nacional:
-                  type: string
-                tipo_documento:
-                  type: string
-                habilitacao:
-                  type: boolean
-                quantidade_criancas:
-                  type: string
-                experiencia_trabalho:
-                  type: string
-                natacao:
-                  type: boolean
-                carro_exclusivo:
-                  type: boolean
-                receber_newsletter:
-                  type: boolean
-                data_disponibilidade:
-                  type: string
-                  format: date
-                passaporte:
-                  type: string
-              example:
-                telefone: "(11) 1234-5678"
-                cep: "01234-567"
-                logradouro: "Rua Teste"
-                numero: "123"
-                complemento: "Apto. 456"
-                cidade: "São Paulo"
-                estado: "SP"
-                data_de_nascimento: "1995-05-02"
-                escolaridade: "Ensino Superior Completo"
-                idiomas: ["Inglês", "Espanhol"]
-                religiao: "Católica"
-                genero: "Feminino"
-                nacionalidade: "Brasileira"
-                numero_identificacao_nacional: "123.456.789-00"
-                tipo_documento: "CPF"
-                habilitacao: true
-                quantidade_criancas: "2"
-                experiencia_trabalho: "1"
-                natacao: true
-                carro_exclusivo: false
-                receber_newsletter: true
-                data_disponibilidade: "2023-06-01"
-                passaporte: "21212222"
+              schema:
+                $ref: '#/components/schemas/AupairProfile'
+              
       responses:
         '201':
           description: Perfil criado com sucesso
@@ -1413,6 +1339,9 @@ components:
               _id:
                 type: string
                 example: 60a8d542be99c540d45b90f9
+              nome_completo:
+                type: string
+                example: "Roberto Santos Silva"
               telefone:
                 type: string
                 example: "+5511999999999"

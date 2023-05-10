@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const AupairProfileSchema = new mongoose.Schema({
+  nome_completo: String,
   telefone: String,
   cep: String,
   logradouro: String,
