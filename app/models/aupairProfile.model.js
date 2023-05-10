@@ -14,6 +14,7 @@ const AupairProfileSchema = new mongoose.Schema({
   religiao: String,
   genero: String,
   nacionalidade: String,
+  passaporte: String,
   habilitacao: {
     type: Boolean,
     default: false

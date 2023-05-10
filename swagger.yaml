@@ -660,6 +660,8 @@ paths:
                 data_disponibilidade:
                   type: string
                   format: date
+                passaporte:
+                  type: string
               example:
                 telefone: "(11) 1234-5678"
                 cep: "01234-567"
@@ -683,6 +685,7 @@ paths:
                 carro_exclusivo: false
                 receber_newsletter: true
                 data_disponibilidade: "2023-06-01"
+                passaporte: "21212222"
       responses:
         '201':
           description: Perfil criado com sucesso
@@ -720,22 +723,18 @@ paths:
         '500':
           description: Erro do servidor
     get:
-      summary: Recupera o perfil do Au Pair logado
+      summary: Get the Aupair profile for the authenticated user
       tags:
       - Perfil
-      security:
-        - bearerAuth: []
       responses:
         '200':
-          description: Retorna o perfil do Au Pair
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/definitions/Aupair'
-        '401':
-          description: Não autorizado
+                $ref: '#/components/schemas/AupairProfile'
         '404':
-          description: Perfil não encontrado
+          description: Aupair profile not found
           content:
             application/json:
               schema:
@@ -748,7 +747,7 @@ paths:
                     type: boolean
                     example: true
         '500':
-          description: Erro do servidor
+          description: Server error
           content:
             application/json:
               schema:
@@ -1174,13 +1173,13 @@ paths:
                 properties:
                   message:
                     type: string
-  /pagamento/familia:
+  /pagamento/publicador:
     post:
       tags:
         - "Pagamento"
-      summary: Iniciar pagamento de vaga patrocinada
+      summary: Iniciar pagamento do publicador de vagas.
       description: |
-        Endpoint utilizado para iniciar o pagamento de uma vaga patrocinada.
+        Endpoint utilizado para iniciar pagamento do publicador de vagas.
 
         **Credenciais de usuário de teste:**
         E-mail: sb-p7r5n25931191@personal.example.com
@@ -1440,9 +1439,7 @@ definitions:
         format: date
       numero_identificacao_nacional:
         type: string
-      resumo:
-        type: string
-      habilitacao_pid:
+      passaporte:
         type: string
 
   UserProfileResponse:
@@ -1495,7 +1492,100 @@ components:
         - _id
         - name
         - email
-
+    AupairProfile:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: 60a8d542be99c540d45b90f9
+              telefone:
+                type: string
+                example: "+5511999999999"
+              cep:
+                type: string
+                example: "01234567"
+              logradouro:
+                type: string
+                example: "Rua A"
+              numero:
+                type: string
+                example: "123"
+              complemento:
+                type: string
+                example: "Apto 45"
+              cidade:
+                type: string
+                example: "São Paulo"
+              estado:
+                type: string
+                example: "SP"
+              data_de_nascimento:
+                type: string
+                format: date-time
+                example: "1990-01-01T00:00:00.000Z"
+              escolaridade:
+                type: string
+                example: "Ensino Superior Completo"
+              idiomas:
+                type: array
+                items:
+                  type: string
+                example: ["Inglês", "Espanhol"]
+              religiao:
+                type: string
+                example: "Católica"
+              genero:
+                type: string
+                example: "Feminino"
+              nacionalidade:
+                type: string
+                example: "Brasileira"
+              passaporte:
+                type: string
+                example: "AB123456"
+              habilitacao:
+                type: boolean
+                example: true
+              quantidade_criancas:
+                type: string
+                example: "3"
+              experiencia_trabalho:
+                type: string
+                example: "2 anos"
+              natacao:
+                type: boolean
+                example: true
+              carro_exclusivo:
+                type: boolean
+                example: true
+              receber_newsletter:
+                type: boolean
+                example: false
+              data_disponibilidade:
+                type: string
+                format: date-time
+                example: "2023-05-30T00:00:00.000Z"
+              numero_identificacao_nacional:
+                type: string
+                example: "1234567890"
+              tipo_documento:
+                type: string
+                example: "RG"
+              firstLogin:
+                type: boolean
+                example: false
+              user:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: 60a8d541be99c540d45b90f8
+                  nome:
+                    type: string
+                    example: "João Silva"
+                  email:
+                    type: string
+                    example: "joao.silva@example.com"
     ErrorResponse:
       type: object
       properties:

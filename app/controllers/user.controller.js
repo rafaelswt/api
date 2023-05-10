@@ -314,6 +314,7 @@ exports.createAupairProfile = async (req, res) => {
       carro_exclusivo,
       receber_newsletter,
       data_disponibilidade,
+      passaporte,
     } = req.body;
 
     const dob = new Date(data_de_nascimento);
@@ -346,6 +347,7 @@ exports.createAupairProfile = async (req, res) => {
       carro_exclusivo,
       receber_newsletter,
       data_disponibilidade,
+      passaporte,
       user: req.userId
     });
 
@@ -439,7 +441,6 @@ exports.updateAupairProfile = async (req, res) => {
     res.status(500).json({ message: 'Erro ao atualizar o perfil.' });
   }
 };
-
 
 exports.findMatches = (req, res) => {
   if (req.query.roles === "ROLE_FAMILY") {
@@ -1169,6 +1170,25 @@ exports.cancel = (req, res) => {
   res.send('Payment cancelled');
 };
 
+/* paypal.webProfile.create({
+  name: "Webbstars",
+  presentation: {
+    brand_name: "Webbstars",
+    logo_image: "https://www.example.com/logo.png",
+    locale_code: "US"
+  },
+  input_fields: {
+    no_shipping: 1,
+    address_override: 0
+  }
+}, function (error, profile) {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log("Web experience profile created with ID: " + profile.id);
+  }
+}); */
+
 // controller for handling the return URL
 exports.success = (req, res) => {
   const paymentId = req.query.paymentId;
@@ -1200,12 +1220,14 @@ exports.success = (req, res) => {
             console.error(err);
             res.status(500).send('Error processing payment');
           } else {
-            const message = 'Payment successful. You will be redirected in 3 seconds.';
-            res.write(`<p>${message}</p>`);
-            console.log('Redirecting to https://www.aupamatch.com/post_job in 3 seconds...');
-            setTimeout(() => {
-              res.redirect('https://www.aupamatch.com/post_job');
-            }, 3000);
+            const confirmationHtml = `
+            <div>
+              <h1>Pagamento Confirmado!</h1>
+              <p>Obrigado por sua compra!</p>
+              <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png" alt="Checkmark" />
+            </div>
+          `;
+          res.send(confirmationHtml);
           }
         }
       );
@@ -1213,7 +1235,7 @@ exports.success = (req, res) => {
   });
 };
 
-exports.pagamentoFamilia = (req, res) => {
+exports.pagamentoPublicador = (req, res) => {
   let baseUrl = '';
 
   if (process.env.NODE_ENV === 'production') {
@@ -1233,7 +1255,7 @@ exports.pagamentoFamilia = (req, res) => {
     transactions: [{
       item_list: {
         items: [{
-          name: 'Vaga Patrocinada',
+          name: 'Publicador de Vagas',
           sku: '001',
           price: '100.00',
           currency: 'BRL',
@@ -1246,7 +1268,8 @@ exports.pagamentoFamilia = (req, res) => {
       },
       description: 'Ative a opção de publicador de vaga',
       custom: req.userId // add the ID of the user to the custom field
-    }]
+    }],
+      experience_profile_id: 'XP-GP98-JA8J-GJRQ-LK9N'
   };
 
   paypal.payment.create(paymentData, (error, payment) => {

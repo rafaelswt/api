@@ -113,13 +113,6 @@ module.exports = function(app) {
     [authJwt.verifyToken],
     controller.updateUserCredentials
   );
-
-  app.patch(
-    "/api/update-user",
-    [authJwt.verifyToken],
-    controller.updateUserCredentials
-  );
-
   app.put(
     "/api/vaga/:id/toggle",
     [authJwt.verifyToken],
@@ -142,9 +135,9 @@ module.exports = function(app) {
   );
 
   app.post(
-    "/api/pagamento/familia",
+    "/api/pagamento/publicador",
     [authJwt.verifyToken],
-    controller.pagamentoFamilia
+    controller.pagamentoPublicador
   );
 
   app.get(
