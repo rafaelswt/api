@@ -1087,6 +1087,10 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Código inválido' });
     }
 
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'A senha deve ter pelo menos 8 caracteres' });
+    }
+
     // Define a nova senha e limpa o código de redefinição de senha
     user.passwordResetCodeValid = false; // código utilizado, invalida o código
     user.password = bcrypt.hashSync(password, 8);
