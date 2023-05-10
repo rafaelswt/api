@@ -45,6 +45,7 @@ const User = mongoose.model(
       default: false
     },
     pago: Boolean,
+    processed: Boolean,
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,

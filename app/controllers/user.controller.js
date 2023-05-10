@@ -1199,6 +1199,8 @@ exports.success = (req, res) => {
   const payerId = req.query.PayerID;
   const details = { 'payer_id': payerId };
 
+  console.log(details)
+
   paypal.payment.execute(paymentId, details, (error, payment) => {
     if (error) {
       console.error(error);
@@ -1206,42 +1208,50 @@ exports.success = (req, res) => {
     } else {
       // payment successful, update your database or perform any other required action
       const userId = payment.transactions[0].custom; // get the ID of the user from the custom field
-      // update the user's payment status in the database
-      User.findOneAndUpdate(
-        { _id: userId },
-        { 
-          pago: true,
-          $push: { // adicione uma entrada ao array de histórico de compras
-            purchaseHistory: {
-              product: payment.transactions[0].item_list.items[0].name,
-              value: parseFloat(payment.transactions[0].amount.total)
+      // check if payment has already been processed for this user
+      User.findOne({_id: userId, processed: true}, (err, user) => {
+        if (user) {
+          res.send('Payment has already been processed.');
+        } else {
+          // update the user's payment status in the database
+          User.findOneAndUpdate(
+            { _id: userId },
+            { 
+              pago: true,
+              processed: true,
+              $push: { // adicione uma entrada ao array de histórico de compras
+                purchaseHistory: {
+                  product: payment.transactions[0].item_list.items[0].name,
+                  value: parseFloat(payment.transactions[0].amount.total)
+                }
+              }
+            },
+            { new: true },
+            (err, user) => {
+              if (err) {
+                console.error(err);
+                res.status(500).send('Error processing payment');
+              } else {
+                const confirmationHtml = `
+                <div style="background-color: #fff; border: 1px solid #ccc; margin: 50px auto; max-width: 400px; padding: 20px;">
+                  <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png" alt="PayPal" style="float: left; margin-right: 20px;">
+                  <div style="font-size: 16px; color: #444; margin-top: 40px;">
+                    Seu pagamento de <strong>${payment.transactions[0].item_list.items[0].name}</strong> no valor de <strong>R$${parseFloat(payment.transactions[0].amount.total).toFixed(2)}</strong> foi concluído. Você pode voltar para o site da <a href="https://www.aupamatch.com/" style="color: #0070ba; text-decoration: none;">Aupamatch</a>.
+                  </div>
+                  <div style="clear: both;"></div>
+                </div>
+                `;
+                
+                res.send(confirmationHtml);
+              }
             }
-          }
-        },
-        { new: true },
-        (err, user) => {
-          if (err) {
-            console.error(err);
-            res.status(500).send('Error processing payment');
-          } else {
-            const confirmationHtml = `
-            <div style="background-color: #fff; border: 1px solid #ccc; margin: 50px auto; max-width: 400px; padding: 20px;">
-              <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png" alt="PayPal" style="float: left; margin-right: 20px;">
-              <div style="font-size: 16px; color: #444; margin-top: 40px;">
-                Seu pagamento foi concluído. Para continuar comprando, volte ao vendedor.
-              </div>
-              <div style="clear: both;"></div>
-            </div>
-          `;
-          res.send(confirmationHtml);
-          
-          
-          }
+          );
         }
-      );
+      });
     }
   });
 };
+
 
 exports.pagamentoPublicador = async (req, res) => {
 
