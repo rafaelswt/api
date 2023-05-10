@@ -1222,13 +1222,17 @@ exports.success = (req, res) => {
             res.status(500).send('Error processing payment');
           } else {
             const confirmationHtml = `
-            <div>
-              <h1>Pagamento Confirmado!</h1>
-              <p>Obrigado por sua compra!</p>
-              <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png" alt="Checkmark" />
+            <div style="background-color: #fff; border: 1px solid #ccc; margin: 50px auto; max-width: 400px; padding: 20px;">
+              <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png" alt="PayPal" style="float: left; margin-right: 20px;">
+              <div style="font-size: 16px; color: #444; margin-top: 40px;">
+                Seu pagamento foi concluído. Para continuar comprando, volte ao vendedor.
+              </div>
+              <div style="clear: both;"></div>
             </div>
           `;
           res.send(confirmationHtml);
+          
+          
           }
         }
       );
