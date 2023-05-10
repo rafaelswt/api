@@ -1105,7 +1105,7 @@ paths:
   /pagamento/publicador:
     post:
       tags:
-        - "Pagamento"
+        - "Compras"
       summary: Iniciar pagamento do publicador de vagas.
       description: |
         Endpoint utilizado para iniciar pagamento do publicador de vagas.
@@ -1139,40 +1139,26 @@ paths:
                 description: Mensagem de erro
   /compra-history:
     get:
-      summary: Obter histórico de compras do usuário
-      tags:
-        - "Pagamento"
+      summary: Retorna o histórico de compras do usuário logado
       parameters:
         - name: x-access-token
           in: header
           description: Token de autenticação
           required: true
           type: string
-      description: Endpoint utilizado para obter o histórico de compras do usuário autenticado.
+      description: Retorna o histórico de compras do usuário logado com base em seu ID de usuário.
+      tags:
+        - "Compras"
+
       responses:
         '200':
-          description: Histórico de compras do usuário
-          schema:
-            type: object
-            properties:
-              purchaseHistory:
+          description: OK
+          content:
+            application/json:
+              schema:
                 type: array
-                description: Lista de compras do usuário
                 items:
-                  type: object
-                  properties:
-                    product:
-                      type: string
-                      description: Nome do produto
-                      example: Tênis Nike Air Max
-                    date:
-                      type: string
-                      description: Data da compra
-                      example: 2022-05-08T15:31:27.856Z
-                    price:
-                      type: number
-                      description: Preço do produto na data da compra
-                      example: 299.99
+                  $ref: '#/components/schemas/PurchaseHistory'
         '401':
           description: Usuário não autenticado
           schema:
@@ -1527,6 +1513,33 @@ components:
         - date
         - ipAddress
         - location
+    PurchaseHistory:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID do histórico de compras
+          example: '6459ac9d51e9e90034840a5a'
+        date:
+          type: string
+          format: date-time
+          description: Data da compra
+          example: '2023-05-09T02:14:53.142Z'
+        product:
+          type: string
+          description: Nome do produto comprado
+          example: 'Vaga Patrocinada'
+        value:
+          type: number
+          description: Valor do produto comprado
+          example: 25
+      required:
+        - _id
+        - date
+        - product
+        - value
+ 
+ 
   securitySchemes:
     bearerAuth:
       type: http
