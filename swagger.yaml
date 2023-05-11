@@ -151,10 +151,13 @@ paths:
       produces:
         - "application/json"
       responses:
-        "200":
-          description: "Successful operation"
-          schema:
-            $ref: "#/definitions/UserProfileResponse"
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+
         "401":
           $ref: "#/responses/UnauthorizedError"
         "404":
@@ -1320,7 +1323,12 @@ definitions:
       $ref: "#/definitions/Error"
 components:
   schemas:
-    UserProfile:
+    UserProfileResponse:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/UserProfileResponsePublicador'
+        - $ref: '#/components/schemas/UserProfileResponseMaisVagas'
+    UserProfileResponsePublicador:
       type: object
       properties:
         _id:
@@ -1332,10 +1340,28 @@ components:
         email:
           type: string
           description: The user email
-      required:
-        - _id
-        - name
-        - email
+        roles:
+          type: string
+        pagamentoPublicador:
+          type: boolean
+    UserProfileResponseMaisVagas:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: The user ID
+        name:
+          type: string
+          description: The user name
+        email:
+          type: string
+          description: The user email
+        roles:
+          type: string
+        pagamentoMaisCandidaturas:
+          type: boolean
+
+
     AupairProfile:
             type: object
             properties:

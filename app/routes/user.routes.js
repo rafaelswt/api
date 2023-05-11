@@ -140,6 +140,13 @@ module.exports = function(app) {
     controller.pagamentoPublicador
   );
 
+
+  app.post(
+    "/api/pagamento/mais-candidaturas",
+    [authJwt.verifyToken],
+    controller.pagamentoMaisCandidaturas
+  );
+
   app.get(
     "/api/success",
     controller.success

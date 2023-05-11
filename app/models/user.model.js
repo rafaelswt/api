@@ -29,6 +29,9 @@ const purchaseHistorySchema = new mongoose.Schema({
   value: {
     type: Number,
     required: true
+  },
+  paymentId: {
+    type: String
   }
 });
 
@@ -45,7 +48,8 @@ const User = mongoose.model(
       default: false
     },
     pago: Boolean,
-    processed: Boolean,
+    pagamentoPublicador: Boolean,
+    pagamentoMaisCandidaturas: Boolean,
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,

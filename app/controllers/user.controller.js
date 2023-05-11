@@ -1124,7 +1124,9 @@ exports.userprofile = (req, res) => {
         id: user._id,
         email: user.email,
         name: user.name,
-        roles: roles
+        roles: roles,
+        pagamentoMaisCandidaturas: user.pagamentoMaisCandidaturas,
+        pagamentoPublicador: user.pagamentoPublicador
       };
 
       res.json(userProfile);
@@ -1205,52 +1207,65 @@ exports.success = (req, res) => {
   const payerId = req.query.PayerID;
   const details = { 'payer_id': payerId };
 
-
-  paypal.payment.execute(paymentId, details, (error, payment) => {
-    if (error) {
-      console.error(error);
-      res.status(500).send('Error processing payment');
+  // check if payment has already been processed
+  User.findOne({ 'purchaseHistory.paymentId': paymentId }, (err, user) => {
+    if (user) {
+      res.send('Payment has already been processed.');
     } else {
-      // payment successful, update your database or perform any other required action
-      const userId = payment.transactions[0].custom; // get the ID of the user from the custom field
-      // check if payment has already been processed for this user
-      User.findOne({_id: userId, processed: true}, (err, user) => {
-        if (user) {
-          res.send('Payment has already been processed.');
+
+      paypal.payment.execute(paymentId, details, (error, payment) => {
+        if (error) {
+          console.error(error);
+          res.status(500).send('Error processing payment');
         } else {
-          // update the user's payment status in the database
-          User.findOneAndUpdate(
-            { _id: userId },
-            { 
-              pago: true,
-              processed: true,
-              $push: { // adicione uma entrada ao array de histórico de compras
-                purchaseHistory: {
-                  product: payment.transactions[0].item_list.items[0].name,
-                  value: parseFloat(payment.transactions[0].amount.total)
+          // payment successful, update your database or perform any other required action
+          const userId = payment.transactions[0].custom; // get the ID of the user from the custom field
+
+          switch(payment.transactions[0].item_list.items[0].name) {
+            case 'Candidatar em mais que 5 vagas':
+              paymentStatusField = 'pagamentoMaisCandidaturas';
+              break;
+            case 'Publicador de Vagas':
+              paymentStatusField = 'pagamentoPublicador';
+              break;
+            default:
+              console.error('Invalid payment type:', paymentType);
+              res.status(500).send('Error processing payment');
+          }
+            // update the user's payment status in the database
+            User.findOneAndUpdate(
+              { _id: userId },
+              { 
+                [paymentStatusField]: true,
+                $push: { // add an entry to the purchase history array
+                  purchaseHistory: {
+                    product: payment.transactions[0].item_list.items[0].name,
+                    value: parseFloat(payment.transactions[0].amount.total),
+                    paymentId: paymentId // add payment ID to the purchase history
+                  }
+                }
+              },
+              { new: true },
+              (err, user) => {
+                if (err) {
+                  console.error(err);
+                  res.status(500).send('Error processing payment');
+                } else {
+                  // check the user's roles and update the user object accordingly
+                  const confirmationHtml = `
+                  <div style="background-color: #fff; border: 1px solid #ccc; margin: 50px auto; max-width: 400px; padding: 20px;">
+                    <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png" alt="PayPal" style="float: left; margin-right: 20px;">
+                    <div style="font-size: 16px; color: #444; margin-top: 40px;">
+                      Seu pagamento de <strong>${payment.transactions[0].item_list.items[0].name}</strong> no valor de <strong>R$${parseFloat(payment.transactions[0].amount.total).toFixed(2)}</strong> foi concluído. Você pode voltar para o site da <a href="https://www.aupamatch.com/" style="color: #0070ba; text-decoration: none;">Aupamatch</a>.
+                    </div>
+                    <div style="clear: both;"></div>
+                  </div>
+                  `;
+                  
+                  res.send(confirmationHtml);
                 }
               }
-            },
-            { new: true },
-            (err, user) => {
-              if (err) {
-                console.error(err);
-                res.status(500).send('Error processing payment');
-              } else {
-                const confirmationHtml = `
-                <div style="background-color: #fff; border: 1px solid #ccc; margin: 50px auto; max-width: 400px; padding: 20px;">
-                  <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png" alt="PayPal" style="float: left; margin-right: 20px;">
-                  <div style="font-size: 16px; color: #444; margin-top: 40px;">
-                    Seu pagamento de <strong>${payment.transactions[0].item_list.items[0].name}</strong> no valor de <strong>R$${parseFloat(payment.transactions[0].amount.total).toFixed(2)}</strong> foi concluído. Você pode voltar para o site da <a href="https://www.aupamatch.com/" style="color: #0070ba; text-decoration: none;">Aupamatch</a>.
-                  </div>
-                  <div style="clear: both;"></div>
-                </div>
-                `;
-                
-                res.send(confirmationHtml);
-              }
-            }
-          );
+            );
         }
       });
     }
@@ -1260,9 +1275,13 @@ exports.success = (req, res) => {
 
 exports.pagamentoPublicador = async (req, res) => {
 
+  if (req.userRoles.includes("ROLE_AUPAIR")) {
+    return res.status(403).json({ message: 'Este pagamento é reservado às Famílias e Agências' });
+  }
+
   const user = await User.findById(req.userId);
 
-  if (user.pago) {
+  if (user.pagamentoPublicador) {
     res.status(400).json({ message: 'O pagamento já foi efetuado.' });
     return;
   }
@@ -1298,6 +1317,66 @@ exports.pagamentoPublicador = async (req, res) => {
         total: '100.00'
       },
       description: 'Ative a opção de publicador de vaga',
+      custom: req.userId // add the ID of the user to the custom field
+    }],
+      experience_profile_id: 'XP-GP98-JA8J-GJRQ-LK9N'
+  };
+
+  paypal.payment.create(paymentData, (error, payment) => {
+    if (error) {
+      console.error(error);
+      res.sendStatus(500);
+    } else {
+      const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
+      res.json({ approvalUrl });;
+    }
+  });
+};
+
+exports.pagamentoMaisCandidaturas = async (req, res) => {
+
+  if (req.userRoles.includes("ROLE_FAMILY")) {
+    return res.status(403).json({ message: 'Este pagamento é reservado às Aupairs' });
+  }
+
+  const user = await User.findById(req.userId);
+
+  if (user.pagamentoMaisCandidaturas) {
+    res.status(400).json({ message: 'O pagamento já foi efetuado.' });
+    return;
+  }
+
+  let baseUrl = '';
+
+  if (process.env.NODE_ENV === 'production') {
+    baseUrl = 'https://aupamatch-api3.onrender.com/';
+  } else {
+    baseUrl = 'http://localhost:8080/';
+  }
+  const paymentData = {
+    intent: 'sale',
+    payer: {
+      payment_method: 'paypal'
+    },
+    redirect_urls: {
+      return_url: `${baseUrl}api/success`,
+      cancel_url: `${baseUrl}api/cancel`
+    },
+    transactions: [{
+      item_list: {
+        items: [{
+          name: 'Candidatar em mais que 5 vagas',
+          sku: '001',
+          price: '25.00',
+          currency: 'BRL',
+          quantity: 1
+        }]
+      },
+      amount: {
+        currency: 'BRL',
+        total: '25.00'
+      },
+      description: 'Ative a opção de candidatar em mais que 5 vagas',
       custom: req.userId // add the ID of the user to the custom field
     }],
       experience_profile_id: 'XP-GP98-JA8J-GJRQ-LK9N'
