@@ -1041,7 +1041,7 @@ paths:
 
         **Credenciais de usuário de teste:**
         E-mail: sb-p7r5n25931191@personal.example.com
-        Senha: G8B>w)3s)
+        Senha: G8B>w)3s
       parameters:
         - name: x-access-token
           in: header
