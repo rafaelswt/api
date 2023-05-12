@@ -1069,6 +1069,44 @@ paths:
               error:
                 type: string
                 description: Mensagem de erro
+  /pagamento/mais-candidaturas:
+    post:
+      tags:
+        - "Compras"
+      summary: Iniciar pagamento para mais que 5 candidaturas.
+      description: |
+        Endpoint utilizado para iniciar pagamento para mais que 5 candidaturas.
+
+        **Credenciais de usuário de teste:**
+        E-mail: sb-p7r5n25931191@personal.example.com
+        Senha: G8B>w)3s
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+      responses:
+        '200':
+          description: URL de aprovação do pagamento
+          schema:
+            type: object
+            properties:
+              approvalUrl:
+                type: string
+                description: URL de aprovação do pagamento
+                example: https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-ABCD1234567890
+        '400':
+          description: Pagamento ja foi efetuado
+
+        '500':
+          description: Erro interno do servidor
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Mensagem de erro
   /compra-history:
     get:
       summary: Retorna o histórico de compras do usuário logado
