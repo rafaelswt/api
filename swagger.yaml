@@ -1321,9 +1321,6 @@ definitions:
       titulo_vaga:
         type: string
         default: Vaga sem título
-      vaga_patrocinada:
-        type: boolean
-        default: false
       pais:
         type: string
         default: ''
