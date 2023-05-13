@@ -1084,7 +1084,7 @@ exports.resetPassword = async (req, res) => {
     }
 
     if (!user.passwordResetCodeValid) {
-      return res.status(400).json({ message: 'Código inválido' });
+      return res.status(400).json({ message: 'Código não validado' });
     }
 
     if (password.length < 8) {
