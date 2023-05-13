@@ -258,7 +258,6 @@ exports.criarvaga = async (req, res) => {
       data_disponibilidade: req.body.data_disponibilidade,
       data_finalizacao_vaga: req.body.data_finalizacao_vaga,
       titulo_vaga: req.body.titulo_vaga,
-      vaga_patrocinada: req.body.vaga_patrocinada,
       pais: pais,
       estado_provincia: req.body.estado_provincia,
       quantidade_criancas: req.body.quantidade_criancas,
@@ -523,7 +522,6 @@ exports.updateVaga = async(req, res) => {
     vaga.data_disponibilidade = req.body.data_disponibilidade || vaga.data_disponibilidade;
     vaga.data_finalizacao_vaga = req.body.data_finalizacao_vaga || vaga.data_finalizacao_vaga;
     vaga.titulo_vaga = req.body.titulo_vaga || vaga.titulo_vaga;
-    vaga.vaga_patrocinada = req.body.vaga_patrocinada || vaga.vaga_patrocinada;
     vaga.pais = req.body.pais || vaga.pais;
     vaga.estado_provincia = req.body.estado_provincia || vaga.estado_provincia;
     vaga.descricao = req.body.descricao || vaga.descricao;
@@ -744,7 +742,6 @@ exports.updateUserCredentials = async (req, res) => {
     res.status(500).json({ message: 'Error updating user credentials.' });
   }
 };
-
 
 exports.match = (req, res) => {
   Candidatura.findById(req.query.candidaturaID)
@@ -997,7 +994,6 @@ const generateResetCode = () => {
   return { code, expires, isValid: false }; // retorna também a informação de validade
 };
 
-
 exports.sendResetToken = async (req, res) => {
   try {
     const { email } = req.body;
@@ -1206,6 +1202,7 @@ exports.success = (req, res) => {
   const paymentId = req.query.paymentId;
   const payerId = req.query.PayerID;
   const details = { 'payer_id': payerId };
+  const vagaId = req.query.vagaId
 
   // check if payment has already been processed
   User.findOne({ 'purchaseHistory.paymentId': paymentId }, (err, user) => {
@@ -1219,14 +1216,26 @@ exports.success = (req, res) => {
           res.status(500).send('Error processing payment');
         } else {
           // payment successful, update your database or perform any other required action
-          const userId = payment.transactions[0].custom; // get the ID of the user from the custom field
 
+          const userId = payment.transactions[0].custom;
+
+          let shouldUpdatePaymentStatus = true; // Adicione essa variável antes do switch case
           switch(payment.transactions[0].item_list.items[0].name) {
             case 'Candidatar em mais que 5 vagas':
               paymentStatusField = 'pagamentoMaisCandidaturas';
               break;
             case 'Publicador de Vagas':
               paymentStatusField = 'pagamentoPublicador';
+              break;
+            case 'Vaga Patrocinada':
+              shouldUpdatePaymentStatus = false; // Adicione esse if dentro do switch case
+              Vaga.findByIdAndUpdate(vagaId, { vaga_patrocinada: true }, { new: true }, (err, updatedVaga) => {
+                if (err) {
+                  console.error(err);
+                  res.status(500).send('Error processing payment');
+                } else {
+                  console.log('Vaga patrocinada atualizada');
+                }})
               break;
             default:
               console.error('Invalid payment type:', paymentType);
@@ -1236,7 +1245,7 @@ exports.success = (req, res) => {
             User.findOneAndUpdate(
               { _id: userId },
               { 
-                [paymentStatusField]: true,
+                ...(shouldUpdatePaymentStatus && {[paymentStatusField]: true}), // Adicione esse if antes da linha que atualiza o usuário
                 $push: { // add an entry to the purchase history array
                   purchaseHistory: {
                     product: payment.transactions[0].item_list.items[0].name,
@@ -1261,7 +1270,6 @@ exports.success = (req, res) => {
                     <div style="clear: both;"></div>
                   </div>
                   `;
-                  
                   res.send(confirmationHtml);
                 }
               }
@@ -1393,6 +1401,71 @@ exports.pagamentoMaisCandidaturas = async (req, res) => {
   });
 };
 
+exports.pagamentoVagaPatrocinada = async (req, res) => {
+
+  if (req.userRoles.includes("ROLE_AUPAIR")) {
+    return res.status(403).json({ message: 'Este pagamento é reservado às Famílias e Agências' });
+  }
+
+  const vaga = await Vaga.findById(req.params.id);
+
+  if (vaga.vaga_patrocinada) {
+    res.status(400).json({ message: 'A vaga já é patrocinada.' });
+    return;
+  }
+
+  if (vaga.user.toString() !== req.userId) {
+    return res.status(403).json({ message: 'Você não tem permissão para editar esta vaga.' });
+  }
+
+  let baseUrl = '';
+
+  if (process.env.NODE_ENV === 'production') {
+    baseUrl = 'https://aupamatch-api3.onrender.com/';
+  } else {
+    baseUrl = 'http://localhost:8080/';
+  }
+
+  console.log()
+  const paymentData = {
+    intent: 'sale',
+    payer: {
+      payment_method: 'paypal'
+    },
+    redirect_urls: {
+      return_url: `${baseUrl}api/success?vagaId=${req.params.id}`,
+      cancel_url: `${baseUrl}api/cancel`
+    },
+    transactions: [{
+      item_list: {
+        items: [{
+          name: 'Vaga Patrocinada',
+          sku: '001',
+          price: '25.00',
+          currency: 'BRL',
+          quantity: 1
+        }]
+      },
+      amount: {
+        currency: 'BRL',
+        total: '25.00'
+      },
+      description: 'Mudar o atributo da vaga para patrocinada',
+      custom: req.userId
+    }],
+      experience_profile_id: 'XP-GP98-JA8J-GJRQ-LK9N'
+  };
+
+  paypal.payment.create(paymentData, (error, payment) => {
+    if (error) {
+      console.error(error);
+      res.sendStatus(500);
+    } else {
+      const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
+      res.json({ approvalUrl });;
+    }
+  });
+};
 exports.getCompraHistory = async (req, res) => {
   
   try {

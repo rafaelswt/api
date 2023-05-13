@@ -1107,6 +1107,75 @@ paths:
               error:
                 type: string
                 description: Mensagem de erro
+
+  /pagamento/vaga-patrocinada/{id}:
+    post:
+      summary: Realiza o pagamento para tornar uma vaga patrocinada
+      tags:
+        - "Compras"
+      description: |
+        Este endpoint realiza o pagamento para tornar uma vaga patrocinada. É necessário estar autenticado como um usuário com permissões para editar a vaga. O pagamento altera o atributo vaga_patrocinada da vaga para true.
+         
+          **Credenciais de usuário de teste:**
+          E-mail: sb-p7r5n25931191@personal.example.com
+          Senha: G8B>w)3s  
+      parameters:
+        - in: path
+          name: id
+          description: ID da vaga a ser patrocinada
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Authorization
+          description: Token de autenticação JWT
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Retorna a URL para aprovação do pagamento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  approvalUrl:
+                    type: string
+                    description: URL para aprovação do pagamento no PayPal
+        '400':
+          description: A vaga já é patrocinada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de erro
+                    example: A vaga já é patrocinada.
+        '403':
+          description: Não há permissão para editar a vaga ou o pagamento é reservado às Famílias e Agências
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de erro
+                    example: Você não tem permissão para editar esta vaga.
+        '500':
+          description: Erro ao realizar o pagamento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de erro
+                    example: Ocorreu um erro ao realizar o pagamento.
   /compra-history:
     get:
       summary: Retorna o histórico de compras do usuário logado

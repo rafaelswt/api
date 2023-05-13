@@ -147,6 +147,12 @@ module.exports = function(app) {
     controller.pagamentoMaisCandidaturas
   );
 
+  app.post(
+    "/api/pagamento/vaga-patrocinada/:id",
+    [authJwt.verifyToken],
+    controller.pagamentoVagaPatrocinada
+  );
+
   app.get(
     "/api/success",
     controller.success
