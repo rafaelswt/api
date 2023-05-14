@@ -96,7 +96,8 @@ exports.listarVagas = async (req, res) => {
       const vagas = await Vaga.find({
         $and: [
           { ativo: { $ne: false } },
-          { "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } }
+          { "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } },
+          { "candidaturas.aupairId": { $ne: mongoose.Types.ObjectId(req.userId) } }
         ]
       }).lean();
 
