@@ -614,10 +614,53 @@ exports.criarCandidatura = async (req, res) => {
     vaga.candidaturas.push({ aupairId: userId });
     await vaga.save();
 
-    return res.status(201).json({ message: "Candidatura criada com sucesso" });
+    const user = await User.findById(vaga.user).populate("roles");
+
+    const aupairProfile = await AupairProfile.findOne({ user: req.userId }).lean();
+
+    const userAupair = await User.findById(aupairProfile.user).populate("roles");
+
+    // Configurar o transporter do nodemailer
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: 'Aupamatch <aupamatch.webbstars@gmail.com>',
+      to: user.email,
+      subject: 'Nova candidatura na vaga',
+      html: `
+      <p>Olá,</p>
+      <p>Uma nova candidatura foi feita para a sua vaga de Au Pair.</p>
+      <p>Segue abaixo algumas informações sobre a candidata/o:</p>
+      <ul>
+        <li>Nome completo: ${aupairProfile.nome_completo}</li>
+        <li>Email: ${userAupair.email}</li>
+        <li>Idiomas: ${aupairProfile.idiomas.join(", ")}</li>
+        <li>Experiência de trabalho: ${aupairProfile.experiencia_trabalho} anos</li>
+        <li>Gênero: ${aupairProfile.genero}</li>
+        <li>Religião: ${aupairProfile.religiao}</li>
+        <li>Data de disponibilidade: ${aupairProfile.data_disponibilidade}</li>
+        <li>Número de crianças que pode cuidar: ${aupairProfile.quantidade_criancas}</li>
+        <li>Possui habilitação: ${aupairProfile.habilitacao ? 'Sim' : 'Não'}</li>
+        <li>Nacionalidade: ${aupairProfile.nacionalidade}</li>
+      </ul>
+      <p>Entre em contato com a candidata/o para mais informações sobre o perfil dela/e.</p>
+    `
+    };
+  
+    await transporter.sendMail(mailOptions);
+  
+    res.status(200).json({
+      message: 'Um email foi enviado com a candidadura da aupair',
+    });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Erro interno do servidor" });
+    res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
