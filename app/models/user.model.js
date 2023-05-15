@@ -50,6 +50,7 @@ const User = mongoose.model(
     pago: Boolean,
     pagamentoPublicador: Boolean,
     pagamentoMaisCandidaturas: Boolean,
+    numero_de_identificacao: String,
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,

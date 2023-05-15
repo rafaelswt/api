@@ -140,6 +140,12 @@ module.exports = function(app) {
     controller.pagamentoPublicador
   );
 
+  app.post(
+    "/api/agenciar-vaga/:id",
+    [authJwt.verifyToken],
+    controller.agenciarVaga
+  );
+
 
   app.post(
     "/api/pagamento/mais-candidaturas",

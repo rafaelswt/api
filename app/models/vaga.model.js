@@ -87,10 +87,18 @@ const VagaSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  exclusivo_agencia: {
+    type: Boolean,
+    default: false
+  },
   user: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
+  agenciaAgenciadora: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Agencia"
+  },
   aupair: [{
     aupairId: {
       type: mongoose.Schema.Types.ObjectId,

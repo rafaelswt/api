@@ -94,7 +94,8 @@ exports.signup = (req, res) => {
           res.status(500).send({ message: err });
           return;
         }
-
+        
+        user.numero_de_identificacao = req.body.numero_de_identificacao
         user.roles = [role._id];
         user.save(err => {
           if (err) {

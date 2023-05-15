@@ -20,8 +20,8 @@ paths:
       summary: Registra um novo usuário
       tags:
       - Auth
-      operationId: signup
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -30,43 +30,33 @@ paths:
                 email:
                   type: string
                   format: email
-                  description: E-mail do usuário
+                  description: Endereço de e-mail do usuário
                 password:
                   type: string
-                  format: password
+                  minLength: 8
                   description: Senha do usuário
                 name:
                   type: string
-                  description: Nome do usuário
+                  description: Nome completo do usuário
                 roles:
                   type: string
-                  enum:
-                    - user
-                    - aupair
-                    - family
-                    - agency
-                  description: Papel do usuário
+                  description: Nível de permissão do usuário
+                  enum: [user, aupair, family, agency]
+                numero_de_identificacao:
+                  type: string
+                  description: Número de identificação da agência (apenas para usuários com permissão "agency")
               required:
                 - email
                 - password
                 - name
                 - roles
       responses:
-        "200":
+        '200':
           description: Usuário registrado com sucesso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Mensagem de confirmação
-        "400":
-          description: Dados inválidos
-        "500":
-          description: Erro interno do servidor
-      security: []
+        '400':
+          description: Dados de entrada inválidos
+        '500':
+          description: Ocorreu um erro no servidor
     x-middleware:
       - name: checkDuplicateUsernameOrEmail
         description: Verifica se já existe um usuário com o mesmo e-mail ou nome de usuário
@@ -594,7 +584,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         500:
           $ref: '#/components/responses/InternalServerError'
-
   /perfil:
     parameters:
     - name: x-access-token
@@ -1107,7 +1096,6 @@ paths:
               error:
                 type: string
                 description: Mensagem de erro
-
   /pagamento/vaga-patrocinada/{id}:
     post:
       summary: Realiza o pagamento para tornar uma vaga patrocinada
@@ -1216,6 +1204,41 @@ paths:
                 type: string
                 description: Mensagem de erro
                 example: Erro interno do servidor
+  /agenciar-vaga/{id}:
+    post:
+      summary: Agenciar uma vaga
+      tags: 
+        - Agência
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Token de autenticação
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: ID da vaga
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Sucesso
+          schema:
+            $ref: '#/definitions/Vaga'
+        '403':
+          description: Permissão negada
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Vaga não encontrada
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Erro do servidor
+          schema:
+            $ref: '#/definitions/Error'
+
+
 definitions:
   Vaga:
     type: object

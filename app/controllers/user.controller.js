@@ -207,26 +207,7 @@ exports.candidaturas = (req, res) => {
 
 exports.criarvaga = async (req, res) => {
   try {
-    // // Verifica se o usuário já possui uma vaga cadastrada
-    // const vagaExistente = await Vaga.findOne({ user: req.userId });
-    // if (vagaExistente) {
-    //   return res.status(400).json({ message: 'Usuário já possui uma vaga cadastrada.' });
-    // }
-
-
-    // // Verifica se o o dado passo é permitido
-    // const idiomasPermitidos = ["Inglês", "Espanhol", "Francês", "Alemão", "Italiano", "Português"];
-
-    // let idiomas;
-
-    // if (req.body.idiomas && idiomasPermitidos.includes(req.body.idiomas)) {
-    //   idiomas = req.body.idiomas;
-    // } else {
-    //   idiomas = ["Não especificado"];
-    // }
-
-    // Verifique se o usuário tem a função "ROLE_FAMILY"
-    if (!req.userRoles.includes("ROLE_FAMILY")) {
+    if (!req.userRoles.includes("ROLE_FAMILY") && !req.userRoles.includes("ROLE_AGENCY")) {
       return res.status(403).json({ message: 'Você não tem permissão para criar uma vaga.' });
     }
 
@@ -266,7 +247,8 @@ exports.criarvaga = async (req, res) => {
       natacao: req.body.natacao,
       habilitacao: req.body.habilitacao,
       carro_exclusivo: req.body.carro_exclusivo,
-      user: req.userId
+      user: req.userId,
+      exclusivo_agencia: req.userRoles.includes("ROLE_AGENCY") ? true : false
     });
 
     const novaVaga = await vaga.save();
@@ -281,6 +263,7 @@ exports.criarvaga = async (req, res) => {
     }
   }
 }
+
 
 exports.createAupairProfile = async (req, res) => {
 
@@ -1211,6 +1194,38 @@ exports.statusVaga = async (req, res) => {
   }
 };
 
+exports.agenciarVaga = async (req, res) => {
+  try {
+    const vagaId  = req.params.id;
+
+    // Verificar se o usuário tem permissão de agenciar a vaga
+    if (!req.userRoles.includes('ROLE_AGENCY')) {
+      return res.status(403).json({ message: 'Você não tem permissão para agenciar uma vaga.' });
+    }
+
+    // Verificar se a vaga existe
+    const vaga = await Vaga.findById(vagaId);
+    if (!vaga) {
+      return res.status(404).json({ message: 'Vaga não encontrada.' });
+    }
+
+    // Verificar se a vaga já está agenciada por outra agência
+    if (vaga.exclusivo_agencia) {
+      return res.status(403).json({ message: 'Esta vaga já está agenciada por outra agência.' });
+    }
+
+    // Atualizar a vaga com o ID da agência agenciadora
+    vaga.agenciaAgenciadora = req.userId;
+    vaga.exclusivo_agencia = true;
+    const vagaAgenciada = await vaga.save();
+
+    res.status(200).json(vagaAgenciada);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro do servidor.' });
+  }
+};
+
 paypal.configure({
   mode: 'sandbox',
   client_id: process.env.CLIENT_ID,
@@ -1327,8 +1342,8 @@ exports.success = (req, res) => {
 
 exports.pagamentoPublicador = async (req, res) => {
 
-  if (req.userRoles.includes("ROLE_AUPAIR")) {
-    return res.status(403).json({ message: 'Este pagamento é reservado às Famílias e Agências' });
+  if (!req.userRoles.includes("ROLE_FAMILY") && !req.userRoles.includes("ROLE_AGENCY")) {
+    return res.status(403).json({ message: 'Você não tem permissão para acessar o pagamento do publicador de vagas.' });
   }
 
   const user = await User.findById(req.userId);
