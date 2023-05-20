@@ -148,6 +148,22 @@ exports.listarVagas = async (req, res) => {
 
       return res.json(vagasSemAupair);
     }
+    else if (req.userRoles.includes("ROLE_AGENCY")) {
+
+    // Recupere as vagas que correspondem aos critérios da agência
+    const vagas = await Vaga.find({})
+      .select("-aupair -candidaturas") // Exclua os campos "aupair" e "candidaturas"
+      .lean();
+
+      // Verifique se foram encontradas vagas
+      if (vagas.length === 0) {
+        return res.status(404).json({ message: "Nenhuma vaga encontrada." });
+      }
+  
+      // Retorne as vagas
+      return res.json(vagas);
+
+    }
 
     return res.status(403).json({ message: "Acesso negado." });
   } catch (error) {
