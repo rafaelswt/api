@@ -1172,20 +1172,28 @@ exports.userprofile = (req, res) => {
     });
 };
 
-exports.loginHistory = async(req, res) => {
+exports.loginHistory = async (req, res) => {
   try {
     const userId = req.userId;
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).send({ message: "Usuário não encontrado" });
     }
-    const loginHistory = user.loginHistory;
+
+    const loginHistory = user.loginHistory.map(({ _id, ipAddress, date }) => ({
+      _id,
+      ipAddress,
+      date,
+    }));
+
+    console.log(loginHistory);
     res.status(200).send(loginHistory);
   } catch (err) {
     console.error(err);
     res.status(500).send({ message: "Erro interno do servidor" });
   }
 };
+
 
 exports.statusVaga = async (req, res) => {
   try {
