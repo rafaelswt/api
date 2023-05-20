@@ -1185,8 +1185,6 @@ exports.loginHistory = async (req, res) => {
       ipAddress,
       date,
     }));
-
-    console.log(loginHistory);
     res.status(200).send(loginHistory);
   } catch (err) {
     console.error(err);
