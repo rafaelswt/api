@@ -86,13 +86,8 @@ function obterFaixaEtaria(dataDeNascimento) {
 
 exports.listarVagas = async (req, res) => {
   try {
-    if (req.userRoles.includes("ROLE_AUPAIR")) {
-      const vagas = await Vaga.find({ user: mongoose.Types.ObjectId(req.userId) })
-        .lean();
-      return res.json(vagas);
-    }
-
-    if (req.userRoles.includes("ROLE_AUPAIR")) {
+    
+      if (req.userRoles.includes("ROLE_AUPAIR")) {
       const vagas = await Vaga.find({
         $and: [
           { ativo: { $ne: false } },
