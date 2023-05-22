@@ -86,7 +86,7 @@ function obterFaixaEtaria(dataDeNascimento) {
 
 exports.listarVagas = async (req, res) => {
   try {
-    if (req.userRoles.includes("ROLE_FAMILY")) {
+    if (!req.userRoles.includes("ROLE_AUPAIR")) {
       const vagas = await Vaga.find({ user: mongoose.Types.ObjectId(req.userId) })
         .lean();
       return res.json(vagas);
@@ -189,7 +189,7 @@ exports.vaga = (req, res) => {
 }
 
 exports.candidaturas = (req, res) => {
-  if (req.query.roles === "ROLE_FAMILY") {
+  if (!req.query.roles === "ROLE_AUPAIR") {
     Vaga.find({})
 
       .exec((err, vaga) => {
@@ -446,7 +446,7 @@ exports.updateAupairProfile = async (req, res) => {
 };
 
 exports.findMatches = (req, res) => {
-  if (req.query.roles === "ROLE_FAMILY") {
+  if (!req.query.roles === "ROLE_AUPAIR") {
     Vaga.find({ 'user.0': mongoose.Types.ObjectId(req.query.id), 'aupair': { $ne: [] } })
       .exec((err, vaga) => {
         if (err) {
@@ -867,7 +867,7 @@ exports.favoritarVaga = async (req, res) => {
 
 exports.listarVagasSalvas = async (req, res) => {
   try {
-    if (req.userRoles.includes("ROLE_FAMILY")) {
+    if (!req.userRoles.includes("ROLE_AUPAIR")) {
       const vagas = await Vaga.find({ user: mongoose.Types.ObjectId(req.userId) })
         .lean();
       return res.json(vagas);
@@ -943,7 +943,7 @@ exports.listarVagasSalvas = async (req, res) => {
 
 exports.listarMinhasVagas = async (req, res) => {
 
-  if (!req.userRoles.includes("ROLE_FAMILY")) {
+  if (req.userRoles.includes("ROLE_AUPAIR")) {
     return res.status(403).json({ message: 'Você não tem permissão para essa página.' });
   }
   try {
@@ -1424,7 +1424,7 @@ exports.pagamentoPublicador = async (req, res) => {
 
 exports.pagamentoMaisCandidaturas = async (req, res) => {
 
-  if (req.userRoles.includes("ROLE_FAMILY")) {
+  if (!req.userRoles.includes("ROLE_AUPAIR")) {
     return res.status(403).json({ message: 'Este pagamento é reservado às Aupairs' });
   }
 
