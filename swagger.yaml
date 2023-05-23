@@ -1163,57 +1163,7 @@ paths:
                   message:
                     type: string
                     description: Mensagem de erro
-                    example: Ocorreu um erro ao realizar o pagamento.
-
-  /pagamento/agenciar:
-    post:
-      summary: Efetua um pagamento para o agenciador
-      description: |
-        Este endpoint realiza o pagamento para agenciar vagas. O pagamento altera o atributo pagamentoAgenciador do user para true.
-         
-          **Credenciais de usuário de teste:**
-          E-mail: sb-p7r5n25931191@personal.example.com
-          Senha: G8B>w)3s  
-      parameters:
-        - in: header
-          name: Authorization
-          description: Token de autenticação JWT
-          required: true
-          schema:
-            type: string
-      tags:
-        - "Compras"
-      responses:
-        200:
-          description: Sucesso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  approvalUrl:
-                    type: string
-                    description: URL de aprovação do pagamento
-        400:
-          description: O pagamento já foi efetuado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Mensagem de erro
-        403:
-          description: Acesso proibido
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Mensagem de erro          
+                    example: Ocorreu um erro ao realizar o pagamento.   
   /compra-history:
     get:
       summary: Retorna o histórico de compras do usuário logado
@@ -1257,36 +1207,78 @@ paths:
   /agenciar-vaga/{id}:
     post:
       summary: Agenciar uma vaga
-      tags: 
-        - Agência
+      tags:
+        - "Compras"
+      description: |
+        Este endpoint realiza o pagamento para agenciar vagas. O pagamento altera os atributos da vaga 'agenciaAgenciadora' para o id da agência e '
+        exclusivo_agencia' para true
+         
+          **Credenciais de usuário de teste:**
+          E-mail: sb-p7r5n25931191@personal.example.com
+          Senha: G8B>w)3s  
       parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID da vaga a ser agenciada
+          schema:
+            type: string
         - name: x-access-token
           in: header
           description: Token de autenticação
           required: true
           type: string
-        - name: id
-          in: path
-          description: ID da vaga
-          required: true
-          type: string
       responses:
-        '200':
+        200:
           description: Sucesso
-          schema:
-            $ref: '#/definitions/Vaga'
-        '403':
-          description: Permissão negada
-          schema:
-            $ref: '#/definitions/Error'
-        '404':
-          description: Vaga não encontrada
-          schema:
-            $ref: '#/definitions/Error'
-        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  approvalUrl:
+                    type: string
+                    description: URL de aprovação do pagamento
+        400:
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de erro
+        403:
+          description: Proibido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de erro
+        404:
+          description: Não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de erro
+        500:
           description: Erro do servidor
-          schema:
-            $ref: '#/definitions/Error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensagem de erro
 
 
 definitions:

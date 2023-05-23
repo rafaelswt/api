@@ -1211,37 +1211,6 @@ exports.statusVaga = async (req, res) => {
   }
 };
 
-exports.agenciarVaga = async (req, res) => {
-  try {
-    const vagaId  = req.params.id;
-
-    // Verificar se o usuário tem permissão de agenciar a vaga
-    if (!req.userRoles.includes('ROLE_AGENCY')) {
-      return res.status(403).json({ message: 'Você não tem permissão para agenciar uma vaga.' });
-    }
-
-    // Verificar se a vaga existe
-    const vaga = await Vaga.findById(vagaId);
-    if (!vaga) {
-      return res.status(404).json({ message: 'Vaga não encontrada.' });
-    }
-
-    // Verificar se a vaga já está agenciada por outra agência
-    if (vaga.exclusivo_agencia) {
-      return res.status(403).json({ message: 'Esta vaga já está agenciada por outra agência.' });
-    }
-
-    // Atualizar a vaga com o ID da agência agenciadora
-    vaga.agenciaAgenciadora = req.userId;
-    vaga.exclusivo_agencia = true;
-    const vagaAgenciada = await vaga.save();
-
-    res.status(200).json(vagaAgenciada);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erro do servidor.' });
-  }
-};
 
 paypal.configure({
   mode: 'sandbox',
@@ -1316,8 +1285,17 @@ exports.success = (req, res) => {
                 }})
                 caminho= 'my_jobs'
               break;
-              case 'Agenciar Vagas':
-                paymentStatusField = 'pagamentoAgenciador';
+              case 'Agenciar uma vaga':
+                shouldUpdatePaymentStatus = false; // Adicione esse if dentro do switch case
+              // Atualizar a vaga com o ID da agência agenciadora
+              console.log(vagaId)
+              Vaga.findByIdAndUpdate(vagaId, { agenciaAgenciadora: userId, exclusivo_agencia : true }, { new: true }, (err, updatedVaga) => {
+                if (err) {
+                  console.error(err);
+                  res.status(500).send('Error processing payment');
+                } else {
+                  console.log(updatedVaga);
+                }})
                 caminho= 'jobs'
                 break;
             default:
@@ -1483,65 +1461,6 @@ exports.pagamentoMaisCandidaturas = async (req, res) => {
     }
   });
 };
-exports.pagamentoAgenciador = async (req, res) => {
-
-  if (!req.userRoles.includes("ROLE_AGENCY")) {
-    return res.status(403).json({ message: 'Este pagamento é reservado às Agências' });
-  }
-
-  const user = await User.findById(req.userId);
-
-  if (user.pagamentoAgenciador) {
-    res.status(400).json({ message: 'O pagamento já foi efetuado.' });
-    return;
-  }
-
-  let baseUrl = '';
-
-  if (process.env.NODE_ENV === 'production') {
-    baseUrl = 'https://aupamatch-api3.onrender.com/';
-  } else {
-    baseUrl = 'http://localhost:8080/';
-  }
-  const paymentData = {
-    intent: 'sale',
-    payer: {
-      payment_method: 'paypal'
-    },
-    redirect_urls: {
-      return_url: `${baseUrl}api/success`,
-      cancel_url: `${baseUrl}api/cancel`
-    },
-    transactions: [{
-      item_list: {
-        items: [{
-          name: 'Agenciar Vagas',
-          sku: '001',
-          price: '250.00',
-          currency: 'BRL',
-          quantity: 1
-        }]
-      },
-      amount: {
-        currency: 'BRL',
-        total: '250.00'
-      },
-      description: 'Ative a opção de agenciar vagas',
-      custom: req.userId // add the ID of the user to the custom field
-    }],
-      experience_profile_id: 'XP-GP98-JA8J-GJRQ-LK9N'
-  };
-
-  paypal.payment.create(paymentData, (error, payment) => {
-    if (error) {
-      console.error(error);
-      res.sendStatus(500);
-    } else {
-      const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
-      res.json({ approvalUrl });;
-    }
-  });
-};
 exports.pagamentoVagaPatrocinada = async (req, res) => {
 
   if (req.userRoles.includes("ROLE_AUPAIR")) {
@@ -1606,6 +1525,88 @@ exports.pagamentoVagaPatrocinada = async (req, res) => {
       res.json({ approvalUrl });;
     }
   });
+};
+exports.agenciarVaga = async (req, res) => {
+  try {
+    const vagaId  = req.params.id;
+
+    // Verificar se o usuário tem permissão de agenciar a vaga
+    if (!req.userRoles.includes('ROLE_AGENCY')) {
+      return res.status(403).json({ message: 'Você não tem permissão para agenciar uma vaga.' });
+    }
+
+    // Verificar se a vaga existe
+    const vaga = await Vaga.findById(vagaId);
+    if (!vaga) {
+      return res.status(404).json({ message: 'Vaga não encontrada.' });
+    }
+
+    // Verificar se a vaga já está agenciada por outra agência
+    if (vaga.exclusivo_agencia) {
+      return res.status(403).json({ message: 'Esta vaga já está agenciada por outra agência.' });
+    }
+
+  if (!req.userRoles.includes("ROLE_AGENCY")) {
+    return res.status(403).json({ message: 'Este pagamento é reservado às Agências' });
+  }
+
+/*   const user = await User.findById(req.userId);
+
+  if (user.pagamentoAgenciador) {
+    res.status(400).json({ message: 'O pagamento já foi efetuado.' });
+    return;
+  } */
+
+  let baseUrl = '';
+
+  if (process.env.NODE_ENV === 'production') {
+    baseUrl = 'https://aupamatch-api3.onrender.com/';
+  } else {
+    baseUrl = 'http://localhost:8080/';
+  }
+  const paymentData = {
+    intent: 'sale',
+    payer: {
+      payment_method: 'paypal'
+    },
+    redirect_urls: {
+      return_url: `${baseUrl}api/success?vagaId=${req.params.id}`,
+      cancel_url: `${baseUrl}api/cancel`
+    },
+    transactions: [{
+      item_list: {
+        items: [{
+          name: 'Agenciar uma vaga',
+          sku: '001',
+          price: '250.00',
+          currency: 'BRL',
+          quantity: 1
+        }]
+      },
+      amount: {
+        currency: 'BRL',
+        total: '250.00'
+      },
+      description: 'Agenciar uma vaga',
+      custom: req.userId // add the ID of the user to the custom field
+    }],
+      experience_profile_id: 'XP-GP98-JA8J-GJRQ-LK9N'
+  };
+
+  paypal.payment.create(paymentData, (error, payment) => {
+    if (error) {
+      console.error(error);
+      res.sendStatus(500);
+    } else {
+      const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
+      res.json({ approvalUrl });;
+    }
+  });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro do servidor.' });
+  }
 };
 exports.getCompraHistory = async (req, res) => {
   

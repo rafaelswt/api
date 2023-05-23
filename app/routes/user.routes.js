@@ -141,12 +141,6 @@ module.exports = function(app) {
   );
 
   app.post(
-    "/api/pagamento/agenciar",
-    [authJwt.verifyToken],
-    controller.pagamentoAgenciador
-  );
-
-  app.post(
     "/api/agenciar-vaga/:id",
     [authJwt.verifyToken],
     controller.agenciarVaga
