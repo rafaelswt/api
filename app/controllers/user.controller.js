@@ -1298,9 +1298,11 @@ exports.success = (req, res) => {
           switch(payment.transactions[0].item_list.items[0].name) {
             case 'Candidatar em mais que 5 vagas':
               paymentStatusField = 'pagamentoMaisCandidaturas';
+              caminho= ''
               break;
             case 'Publicador de Vagas':
               paymentStatusField = 'pagamentoPublicador';
+              caminho= 'post_job'
               break;
             case 'Vaga Patrocinada':
               shouldUpdatePaymentStatus = false; // Adicione esse if dentro do switch case
@@ -1311,6 +1313,7 @@ exports.success = (req, res) => {
                 } else {
                   console.log('Vaga patrocinada atualizada');
                 }})
+                caminho= ''
               break;
             default:
               console.error('Invalid payment type:', paymentType);
@@ -1340,7 +1343,7 @@ exports.success = (req, res) => {
                   <div style="background-color: #fff; border: 1px solid #ccc; margin: 50px auto; max-width: 400px; padding: 20px;">
                     <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png" alt="PayPal" style="float: left; margin-right: 20px;">
                     <div style="font-size: 16px; color: #444; margin-top: 40px;">
-                      Seu pagamento de <strong>${payment.transactions[0].item_list.items[0].name}</strong> no valor de <strong>R$${parseFloat(payment.transactions[0].amount.total).toFixed(2)}</strong> foi concluído. Você pode voltar para o site da <a href="https://www.aupamatch.com/" style="color: #0070ba; text-decoration: none;">Aupamatch</a>.
+                      Seu pagamento de <strong>${payment.transactions[0].item_list.items[0].name}</strong> no valor de <strong>R$${parseFloat(payment.transactions[0].amount.total).toFixed(2)}</strong> foi concluído. Você pode voltar para o site da <a href="https://www.aupamatch.com/${caminho}" style="color: #0070ba; text-decoration: none;">Aupamatch</a>.
                     </div>
                     <div style="clear: both;"></div>
                   </div>
