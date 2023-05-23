@@ -626,7 +626,7 @@ exports.criarCandidatura = async (req, res) => {
     const mailOptions = {
       from: 'Aupamatch <aupamatch.webbstars@gmail.com>',
       to: user.email,
-      subject: 'Nova candidatura na vaga',
+      subject: 'Nova candidatura à vaga',
       html: `
       <p>Olá,</p>
       <p>Uma nova candidatura foi feita para a sua vaga de Au Pair.</p>
