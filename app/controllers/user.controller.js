@@ -1313,7 +1313,7 @@ exports.success = (req, res) => {
                 } else {
                   console.log('Vaga patrocinada atualizada');
                 }})
-                caminho= ''
+                caminho= 'my_jobs'
               break;
             default:
               console.error('Invalid payment type:', paymentType);
