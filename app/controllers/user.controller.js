@@ -1372,6 +1372,11 @@ exports.pagamentoPublicador = async (req, res) => {
 
   const user = await User.findById(req.userId);
 
+  if (user.pagamentoPublicador) {
+    res.status(400).json({ message: 'O pagamento já foi efetuado.' });
+    return;
+  }
+
   let baseUrl = '';
 
   if (process.env.NODE_ENV === 'production') {
