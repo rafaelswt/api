@@ -1159,7 +1159,8 @@ exports.userprofile = (req, res) => {
         name: user.name,
         roles: roles,
         pagamentoMaisCandidaturas: user.pagamentoMaisCandidaturas,
-        pagamentoPublicador: user.pagamentoPublicador
+        pagamentoPublicador: user.pagamentoPublicador,
+        pagamentoAgenciador: user.pagamentoAgenciador
       };
 
       res.json(userProfile);
@@ -1315,6 +1316,10 @@ exports.success = (req, res) => {
                 }})
                 caminho= 'my_jobs'
               break;
+              case 'Agenciar Vagas':
+                paymentStatusField = 'pagamentoAgenciador';
+                caminho= 'jobs'
+                break;
             default:
               console.error('Invalid payment type:', paymentType);
               res.status(500).send('Error processing payment');
@@ -1478,7 +1483,65 @@ exports.pagamentoMaisCandidaturas = async (req, res) => {
     }
   });
 };
+exports.pagamentoAgenciador = async (req, res) => {
 
+  if (!req.userRoles.includes("ROLE_AGENCY")) {
+    return res.status(403).json({ message: 'Este pagamento é reservado às Agências' });
+  }
+
+  const user = await User.findById(req.userId);
+
+  if (user.pagamentoAgenciador) {
+    res.status(400).json({ message: 'O pagamento já foi efetuado.' });
+    return;
+  }
+
+  let baseUrl = '';
+
+  if (process.env.NODE_ENV === 'production') {
+    baseUrl = 'https://aupamatch-api3.onrender.com/';
+  } else {
+    baseUrl = 'http://localhost:8080/';
+  }
+  const paymentData = {
+    intent: 'sale',
+    payer: {
+      payment_method: 'paypal'
+    },
+    redirect_urls: {
+      return_url: `${baseUrl}api/success`,
+      cancel_url: `${baseUrl}api/cancel`
+    },
+    transactions: [{
+      item_list: {
+        items: [{
+          name: 'Agenciar Vagas',
+          sku: '001',
+          price: '250.00',
+          currency: 'BRL',
+          quantity: 1
+        }]
+      },
+      amount: {
+        currency: 'BRL',
+        total: '250.00'
+      },
+      description: 'Ative a opção de agenciar vagas',
+      custom: req.userId // add the ID of the user to the custom field
+    }],
+      experience_profile_id: 'XP-GP98-JA8J-GJRQ-LK9N'
+  };
+
+  paypal.payment.create(paymentData, (error, payment) => {
+    if (error) {
+      console.error(error);
+      res.sendStatus(500);
+    } else {
+      const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
+      res.json({ approvalUrl });;
+    }
+  });
+};
 exports.pagamentoVagaPatrocinada = async (req, res) => {
 
   if (req.userRoles.includes("ROLE_AUPAIR")) {
