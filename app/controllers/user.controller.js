@@ -145,7 +145,12 @@ exports.listarVagas = async (req, res) => {
     else if (req.userRoles.includes("ROLE_AGENCY")) {
 
     // Recupere as vagas que correspondem aos critérios da agência
-    const vagas = await Vaga.find({ ativo: { $ne: false } })
+    const vagas = await Vaga.find({
+      $and: [
+        { ativo: { $ne: false } },
+        { agenciaAgenciadora: { $exists: false } } // Exclude vacancies with "agenciaAgenciadora" field populated
+      ]
+    })
       .select("-aupair -candidaturas") // Exclua os campos "aupair" e "candidaturas"
       .lean();
 
@@ -1288,7 +1293,7 @@ exports.success = (req, res) => {
               case 'Agenciar uma vaga':
                 shouldUpdatePaymentStatus = false; // Adicione esse if dentro do switch case
               // Atualizar a vaga com o ID da agência agenciadora
-              console.log(vagaId)
+              console.log('Vaga agenciada atualizada')
               Vaga.findByIdAndUpdate(vagaId, { agenciaAgenciadora: userId, exclusivo_agencia : true }, { new: true }, (err, updatedVaga) => {
                 if (err) {
                   console.error(err);
@@ -1340,7 +1345,6 @@ exports.success = (req, res) => {
     }
   });
 };
-
 
 exports.pagamentoPublicador = async (req, res) => {
 
