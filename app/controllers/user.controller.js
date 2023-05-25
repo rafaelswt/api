@@ -263,7 +263,10 @@ exports.criarvaga = async (req, res) => {
       habilitacao: req.body.habilitacao,
       carro_exclusivo: req.body.carro_exclusivo,
       user: req.userId,
-      exclusivo_agencia: req.userRoles.includes("ROLE_AGENCY") ? true : false
+      exclusivo_agencia: req.userRoles.includes("ROLE_AGENCY") ? true : false,
+      agenciaAgenciadora: req.userRoles.includes("ROLE_AGENCY") ? req.userId : null
+
+
     });
 
     const novaVaga = await vaga.save();
@@ -1285,7 +1288,7 @@ exports.success = (req, res) => {
           switch(payment.transactions[0].item_list.items[0].name) {
             case 'Candidatar em mais que 5 vagas':
               paymentStatusField = 'pagamentoMaisCandidaturas';
-              caminho= ''
+              caminho= 'jobs'
               break;
             case 'Publicador de Vagas':
               paymentStatusField = 'pagamentoPublicador';
@@ -1305,13 +1308,12 @@ exports.success = (req, res) => {
               case 'Agenciar uma vaga':
                 shouldUpdatePaymentStatus = false; // Adicione esse if dentro do switch case
               // Atualizar a vaga com o ID da agência agenciadora
-              console.log('Vaga agenciada atualizada')
-              Vaga.findByIdAndUpdate(vagaId, { agenciaAgenciadora: userId, exclusivo_agencia : true }, { new: true }, (err, updatedVaga) => {
+              Vaga.findByIdAndUpdate(vagaId, { agenciaAgenciadora: userId}, { new: true }, (err, updatedVaga) => {
                 if (err) {
                   console.error(err);
                   res.status(500).send('Error processing payment');
                 } else {
-                  console.log(updatedVaga);
+                  console.log('Vaga agenciada atualizada');
                 }})
                 caminho= 'jobs'
                 break;
@@ -1558,7 +1560,7 @@ exports.agenciarVaga = async (req, res) => {
     }
 
     // Verificar se a vaga já está agenciada por outra agência
-    if (vaga.exclusivo_agencia) {
+    if (vaga.agenciaAgenciadora) {
       return res.status(403).json({ message: 'Esta vaga já está agenciada por outra agência.' });
     }
 
