@@ -592,6 +592,16 @@ exports.criarCandidatura = async (req, res) => {
     const vagaID = req.query.vagaID;
     const userId = req.userId;
 
+    // Verificar o número de candidaturas existentes da aupair
+    const candidaturasAupair = await Vaga.find({
+      "candidaturas.aupairId": userId
+    }).countDocuments();
+
+    // Verificar se o limite máximo de candidaturas foi atingido
+    if (candidaturasAupair >= 5) {
+      return res.status(400).json({ error: "Limite máximo de candidaturas atingido" });
+    }
+
     // Procura a vaga correspondente ao ID fornecido
     const vaga = await Vaga.findById(vagaID);
 
