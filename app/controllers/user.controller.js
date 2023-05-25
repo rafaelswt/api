@@ -597,8 +597,10 @@ exports.criarCandidatura = async (req, res) => {
       "candidaturas.aupairId": userId
     }).countDocuments();
 
+    const aupairUser = await User.findOne({ _id: userId });
+
     // Verificar se o limite máximo de candidaturas foi atingido
-    if (candidaturasAupair >= 5) {
+    if (candidaturasAupair >= 5 && !aupairUser.pagamentoMaisCandidaturas) {
       return res.status(400).json({ error: "Limite máximo de candidaturas atingido" });
     }
 
@@ -662,7 +664,7 @@ exports.criarCandidatura = async (req, res) => {
     `
     };
   
-    await transporter.sendMail(mailOptions);
+/*     await transporter.sendMail(mailOptions); */
   
     res.status(200).json({
       message: 'Um email foi enviado com a candidadura da aupair',
