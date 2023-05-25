@@ -1306,17 +1306,67 @@ exports.success = (req, res) => {
                 caminho= 'my_jobs'
               break;
               case 'Agenciar uma vaga':
-                shouldUpdatePaymentStatus = false; // Adicione esse if dentro do switch case
-              // Atualizar a vaga com o ID da agência agenciadora
-              Vaga.findByIdAndUpdate(vagaId, { agenciaAgenciadora: userId}, { new: true }, (err, updatedVaga) => {
-                if (err) {
-                  console.error(err);
-                  res.status(500).send('Error processing payment');
-                } else {
-                  console.log('Vaga agenciada atualizada');
-                }})
-                caminho= 'jobs'
+                shouldUpdatePaymentStatus = false;
+                Vaga.findByIdAndUpdate(vagaId, { agenciaAgenciadora: userId }, { new: true }, async (err, updatedVaga) => {
+                  if (err) {
+                    console.error(err);
+                    res.status(500).send('Error processing payment');
+                  } else {
+                    console.log('Vaga agenciada atualizada');
+              
+                    try {
+                      const agencia = await User.findById(userId);
+                      const usuario = await User.findById(updatedVaga.user[0]);
+
+                      if (usuario && agencia)
+                      {
+                          // Configurar o transporter do nodemailer
+                          const transporter = nodemailer.createTransport({
+                            service: 'gmail',
+                            auth: {
+                              user: process.env.EMAIL_USER,
+                              pass: process.env.EMAIL_PASS,
+                            },
+                          });
+                          const mailOptions = {
+                            from: 'Aupamatch <aupamatch.webbstars@gmail.com>',
+                            to: agencia.email, // Use the user's email retrieved from the User model
+                            subject: 'Nova vaga agenciada',
+                            html: `
+                              <p>Olá,</p>
+                              <p>Você tem uma nova vaga agenciada.</p>
+                              <p>Segue abaixo algumas informações sobre a família:</p>
+                              <ul>
+                                <li>Nome completo: ${usuario.name}</li>
+                                <li>Email: ${usuario.email}</li>
+                                <li>Título da Vaga: ${updatedVaga.titulo_vaga}</li>
+                                <li>Escolaridade: ${updatedVaga.escolaridade}</li>
+                                <li>Idiomas: ${updatedVaga.idiomas.join(', ')}</li>
+                                <li>Religião: ${updatedVaga.religiao}</li>
+                                <li>Gênero: ${updatedVaga.genero}</li>
+                                <li>Nacionalidade: ${updatedVaga.nacionalidade}</li>
+                                <li>Faixa Etária: ${updatedVaga.faixa_etaria.join(', ')}</li>
+                                <li>Experiência de Trabalho: ${updatedVaga.experiencia_trabalho}</li>
+                                <li>Quantidade de Crianças: ${updatedVaga.quantidade_criancas}</li>
+                                <li>Estado/Província: ${updatedVaga.estado_provincia}</li>
+                                <li>Descrição: ${updatedVaga.descricao}</li>
+                                <li>Natação: ${updatedVaga.natacao ? 'Sim' : 'Não'}</li>
+                                <li>Habilitação: ${updatedVaga.habilitacao ? 'Sim' : 'Não'}</li>
+                              </ul>
+                              <p>Entre em contato com a família para mais informações sobre o perfil dela/e.</p>
+                            `,
+                          };
+                          await transporter.sendMail(mailOptions);
+                      }
+                    } catch (error) {
+                      console.log('Erro ao buscar informações do usuário:', error);
+                    }
+                  }
+                });
+              
+                caminho = 'jobs';
                 break;
+              
             default:
               console.error('Invalid payment type:', paymentType);
               res.status(500).send('Error processing payment');
