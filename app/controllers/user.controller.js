@@ -664,7 +664,7 @@ exports.criarCandidatura = async (req, res) => {
     `
     };
   
-/*     await transporter.sendMail(mailOptions); */
+    await transporter.sendMail(mailOptions);
   
     res.status(200).json({
       message: 'Um email foi enviado com a candidadura da aupair',
