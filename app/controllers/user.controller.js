@@ -881,12 +881,6 @@ exports.favoritarVaga = async (req, res) => {
 
 exports.listarVagasSalvas = async (req, res) => {
   try {
-    if (!req.userRoles.includes("ROLE_AUPAIR")) {
-      const vagas = await Vaga.find({ user: mongoose.Types.ObjectId(req.userId) })
-        .lean();
-      return res.json(vagas);
-    }
-
     if (req.userRoles.includes("ROLE_AUPAIR")) {
       const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } })
         .lean();
@@ -943,7 +937,55 @@ exports.listarVagasSalvas = async (req, res) => {
         return rest;
       });
 
+      return res.json(vagasSemAupair);
+    }
+    else if (req.userRoles.includes("ROLE_AGENCY")) {
+      const vagas = await Vaga.find({ "aupair.0": { $ne: mongoose.Types.ObjectId(req.userId) } })
+        .lean();
 
+      if (!vagas) {
+        return res.status(404).json({ message: "Nenhuma vaga encontrada." });
+      }
+
+      const savedVagas = [];
+
+      for (let i = 0; i < vagas.length; i++) {
+        vagas[i].score = "0%";
+
+        // Verifica se a usuária já visualizou a vaga antes de incrementar a contagem de visualizações
+        const visualizacao = await Visualizacao.findOne({
+          vaga: vagas[i]._id,
+          usuario: req.userId
+        });
+
+        if (!visualizacao) {
+          vagas[i].views += 1;
+          await Vaga.updateOne({ _id: vagas[i]._id }, { $inc: { views: 1 } });
+
+          // Registra a visualização da usuária na coleção "Visualizações"
+          await Visualizacao.create({
+            vaga: vagas[i]._id,
+            usuario: req.userId
+          });
+        }
+
+        const ObjectID = require('mongodb').ObjectID;
+        const isSaved = vagas[i].aupair.find(a => String(a._id) === String(ObjectID(req.userId)))?.saved || false;
+
+        // Adiciona o campo "isSaved" na própria vaga
+        vagas[i].isSaved = isSaved;
+
+        // Adiciona a vaga à lista de vagas salvas se o campo isSaved for verdadeiro
+        if (isSaved) {
+          savedVagas.push(vagas[i]);
+        }
+      }
+
+      // // Remove o array "aupair" da resposta
+      const vagasSemAupair = savedVagas.map(vaga => {
+        const { aupair, ...rest } = vaga;
+        return rest;
+      });
 
       return res.json(vagasSemAupair);
     }
