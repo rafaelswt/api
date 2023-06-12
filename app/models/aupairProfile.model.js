@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 const AupairProfileSchema = new mongoose.Schema({
   nome_completo: String,
@@ -8,7 +8,7 @@ const AupairProfileSchema = new mongoose.Schema({
   numero: String,
   complemento: String,
   cidade: String,
-  estado: String, 
+  estado: String,
   data_de_nascimento: Date,
   escolaridade: String,
   idiomas: [String],
@@ -53,11 +53,11 @@ const AupairProfileSchema = new mongoose.Schema({
   user: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
+      ref: 'User'
     }
   ]
-});
+})
 
-const AupairProfile = mongoose.model("AupairProfile", AupairProfileSchema);
+const AupairProfile = mongoose.model('AupairProfile', AupairProfileSchema)
 
-module.exports = AupairProfile;
+module.exports = AupairProfile

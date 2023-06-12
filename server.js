@@ -1,41 +1,38 @@
-const express = require("express");
-const cors = require("cors");
+const express = require('express')
+const cors = require('cors')
 const helmet = require('helmet')
-const validator = require('validator');
-const dbConfig = require("./app/config/db.config");
+const dbConfig = require('./app/config/db.config')
 require('dotenv').config()
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-const swaggerDocument = YAML.load('./swagger.yaml');
-const scheduler = require("./app/controllers/scheduler.js");
+const swaggerUi = require('swagger-ui-express')
+const YAML = require('yamljs')
+const swaggerDocument = YAML.load('./swagger.yaml')
+const scheduler = require('./app/controllers/scheduler.js')
 
 const app = express()
 
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    connectSrc: ["'self'", "https://aupamatch-api3.render.com/", "http://localhost:8080/"],
-    imgSrc: ["'self'", "https://www.paypalobjects.com"]
+    connectSrc: ["'self'", 'https://aupamatch-api3.render.com/', 'http://localhost:8080/'],
+    imgSrc: ["'self'", 'https://www.paypalobjects.com']
   }
-}));
+}))
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-var corsOptions = {
-  origin: "*"
-};
-app.use(cors(corsOptions));
+const corsOptions = {
+  origin: '*'
+}
+app.use(cors(corsOptions))
 
 // parse requests of content-type - application/json
-app.use(express.json());
+app.use(express.json())
 
 // parse requests of content-type - application/x-www-form-urlencoded
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }))
 
-const db = require("./app/models");
-const Role = db.role;
-
+const db = require('./app/models')
+const Role = db.role
 
 db.mongoose
   .connect(process.env.MONGODB_URI || `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`, {
@@ -43,74 +40,72 @@ db.mongoose
     useUnifiedTopology: true
   })
   .then(() => {
-    console.log("Successfully connect to MongoDB.");
-    initial();
+    console.log('Successfully connect to MongoDB.')
+    initial()
   })
   .catch(err => {
-    console.error("Connection error", err);
-    process.exit();
-  });
+    console.error('Connection error', err)
+    process.exit()
+  })
 
 // simple route
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to Webbstars application." });
-});
-scheduler.start();
+app.get('/', (req, res) => {
+  res.json({ message: 'Welcome to Webbstars application.' })
+})
+scheduler.start()
 
 // routes
-require("./app/routes/auth.routes")(app);
-require("./app/routes/user.routes")(app);
-
+require('./app/routes/auth.routes')(app)
+require('./app/routes/user.routes')(app)
 
 // set port, listen for requests
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}.`);
-});
+  console.log(`Server is running on port ${PORT}.`)
+})
 
-
-function initial() {
+function initial () {
   Role.estimatedDocumentCount((err, count) => {
     if (!err && count === 0) {
       new Role({
-        name: "user"
+        name: 'user'
       }).save(err => {
         if (err) {
-          console.log("error", err);
+          console.log('error', err)
         }
 
-        console.log("added 'user' to roles collection");
-      });
+        console.log("added 'user' to roles collection")
+      })
 
       new Role({
-        name: "aupair"
+        name: 'aupair'
       }).save(err => {
         if (err) {
-          console.log("error", err);
+          console.log('error', err)
         }
 
-        console.log("added 'aupair' to roles collection");
-      });
+        console.log("added 'aupair' to roles collection")
+      })
 
       new Role({
-        name: "family"
+        name: 'family'
       }).save(err => {
         if (err) {
-          console.log("error", err);
+          console.log('error', err)
         }
 
-        console.log("added 'family' to roles collection");
-      });
+        console.log("added 'family' to roles collection")
+      })
 
       new Role({
-        name: "agency"
+        name: 'agency'
       }).save(err => {
         if (err) {
-          console.log("error", err);
+          console.log('error', err)
         }
 
-        console.log("added 'agency' to roles collection");
-      });
+        console.log("added 'agency' to roles collection")
+      })
     }
-  });
+  })
 }
