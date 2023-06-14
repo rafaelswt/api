@@ -151,12 +151,39 @@ exports.listarVagas = async (req, res) => {
         { agenciaAgenciadora: { $exists: false } } // Exclude vacancies with "agenciaAgenciadora" field populated
       ]
     })
-      .select("-aupair -candidaturas") // Exclua os campos "aupair" e "candidaturas"
+      .select("-candidaturas") // Exclua os campos "aupair" e "candidaturas"
       .lean();
 
       // Verifique se foram encontradas vagas
       if (vagas.length === 0) {
         return res.status(404).json({ message: "Nenhuma vaga encontrada." });
+      }
+
+      for (let i = 0; i < vagas.length; i++) {
+        vagas[i].score = "0%";
+
+        // Verifica se a usuária já visualizou a vaga antes de incrementar a contagem de visualizações
+        const visualizacao = await Visualizacao.findOne({
+          vaga: vagas[i]._id,
+          usuario: req.userId
+        });
+
+        if (!visualizacao) {
+          vagas[i].views += 1;
+          await Vaga.updateOne({ _id: vagas[i]._id }, { $inc: { views: 1 } });
+
+          // Registra a visualização da usuária na coleção "Visualizações"
+          await Visualizacao.create({
+            vaga: vagas[i]._id,
+            usuario: req.userId
+          });
+        }
+
+        const ObjectID = require('mongodb').ObjectID;
+        const isSaved = vagas[i].aupair.find(a => String(a._id) === String(ObjectID(req.userId)))?.saved || false;
+
+        // Adiciona o campo "isSaved" na própria vaga
+        vagas[i].isSaved = isSaved;
       }
   
       // Retorne as vagas
