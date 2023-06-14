@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const loginHistorySchema = new mongoose.Schema({
   date: {
@@ -14,7 +14,7 @@ const loginHistorySchema = new mongoose.Schema({
     type: String,
     required: true
   }
-})
+});
 
 const purchaseHistorySchema = new mongoose.Schema({
   date: {
@@ -33,10 +33,10 @@ const purchaseHistorySchema = new mongoose.Schema({
   paymentId: {
     type: String
   }
-})
+});
 
 const User = mongoose.model(
-  'User',
+  "User",
   new mongoose.Schema({
     name: String,
     email: String,
@@ -55,12 +55,12 @@ const User = mongoose.model(
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Role'
+        ref: "Role"
       }
     ],
     loginHistory: [loginHistorySchema],
     purchaseHistory: [purchaseHistorySchema]
   })
-)
+);
 
-module.exports = User
+module.exports = User;

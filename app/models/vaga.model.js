@@ -1,29 +1,29 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const VagaSchema = new mongoose.Schema({
   escolaridade: {
     type: String,
-    default: 'Qualquer Escolaridade'
+    default: "Qualquer Escolaridade"
   },
   idiomas: {
     type: [String],
-    default: ['Qualquer Idioma']
+    default: ["Qualquer Idioma"]
   },
   religiao: {
     type: String,
-    default: 'Qualquer Religião'
+    default: "Qualquer Religião"
   },
   genero: {
     type: String,
-    default: 'Qualquer Gênero'
+    default: "Qualquer Gênero"
   },
   nacionalidade: {
     type: String,
-    default: 'Qualquer Nacionalidade'
+    default: "Qualquer Nacionalidade"
   },
   faixa_etaria: {
     type: [String],
-    default: ['Qualquer Idade']
+    default: ["Qualquer Idade"]
   },
   experiencia_trabalho: {
     type: String,
@@ -93,16 +93,16 @@ const VagaSchema = new mongoose.Schema({
   },
   user: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: "User"
   }],
   agenciaAgenciadora: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Agencia'
+    ref: "Agencia"
   },
   aupair: [{
     aupairId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Aupair'
+      ref: "Aupair"
     },
     saved: {
       type: Boolean,
@@ -112,7 +112,7 @@ const VagaSchema = new mongoose.Schema({
   candidaturas: [{
     aupairId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Aupair'
+      ref: "Aupair"
     },
     data_candidatura: {
       type: Date,
@@ -124,8 +124,8 @@ const VagaSchema = new mongoose.Schema({
       default: 'pendente'
     }
   }]
-}, { timestamps: true })
+}, { timestamps: true });
 
-const Vaga = mongoose.model('Vaga', VagaSchema)
+const Vaga = mongoose.model("Vaga", VagaSchema);
 
-module.exports = Vaga
+module.exports = Vaga;

@@ -1,32 +1,32 @@
-const jwt = require('jsonwebtoken')
-const config = require('../config/auth.config.js')
-const db = require('../models')
-require('../models')
-const User = db.user
-const Role = db.role
+const jwt = require("jsonwebtoken");
+const config = require("../config/auth.config.js");
+const db = require("../models");
+const { mongoose } = require("../models");
+const User = db.user;
+const Role = db.role;
 
-const verifyToken = (req, res, next) => {
-  const token = req.headers['x-access-token']
+verifyToken = (req, res, next) => {
+  let token = req.headers["x-access-token"];
 
   if (!token) {
-    return res.status(403).send({ message: 'No token provided!' })
+    return res.status(403).send({ message: "No token provided!" });
   }
 
   jwt.verify(token, config.secret, (err, decoded) => {
     if (err) {
-      return res.status(401).send({ message: 'Unauthorized!' })
+      return res.status(401).send({ message: "Unauthorized!" });
     }
-    req.userId = decoded.id
-    req.userRoles = decoded.roles // Recupera o array de roles do token
-    next()
-  })
-}
+    req.userId = decoded.id;
+    req.userRoles = decoded.roles; // Recupera o array de roles do token
+    next();
+  });
+};
 
-const isAdmin = (req, res, next) => {
+isAdmin = (req, res, next) => {
   User.findById(req.userId).exec((err, user) => {
     if (err) {
-      res.status(500).send({ message: err })
-      return
+      res.status(500).send({ message: err });
+      return;
     }
 
     Role.find(
@@ -35,28 +35,29 @@ const isAdmin = (req, res, next) => {
       },
       (err, roles) => {
         if (err) {
-          res.status(500).send({ message: err })
-          return
+          res.status(500).send({ message: err });
+          return;
         }
 
         for (let i = 0; i < roles.length; i++) {
-          if (roles[i].name === 'family') {
-            next()
-            return
+          if (roles[i].name === "family") {
+            next();
+            return;
           }
         }
 
-        res.status(403).send({ message: 'Require Family Role!' })
+        res.status(403).send({ message: "Require Family Role!" });
+        return;
       }
-    )
-  })
-}
+    );
+  });
+};
 
-const isModerator = (req, res, next) => {
+isModerator = (req, res, next) => {
   User.findById(req.userId).exec((err, user) => {
     if (err) {
-      res.status(500).send({ message: err })
-      return
+      res.status(500).send({ message: err });
+      return;
     }
 
     Role.find(
@@ -65,26 +66,27 @@ const isModerator = (req, res, next) => {
       },
       (err, roles) => {
         if (err) {
-          res.status(500).send({ message: err })
-          return
+          res.status(500).send({ message: err });
+          return;
         }
 
         for (let i = 0; i < roles.length; i++) {
-          if (roles[i].name === 'aupair') {
-            next()
-            return
+          if (roles[i].name === "aupair") {
+            next();
+            return;
           }
         }
 
-        res.status(403).send({ message: 'Require Aupair Role!' })
+        res.status(403).send({ message: "Require Aupair Role!" });
+        return;
       }
-    )
-  })
-}
+    );
+  });
+};
 
 const authJwt = {
   verifyToken,
   isAdmin,
   isModerator
-}
-module.exports = authJwt
+};
+module.exports = authJwt;

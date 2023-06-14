@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const VisualizacaoSchema = new mongoose.Schema({
   vaga: {
@@ -15,8 +15,8 @@ const VisualizacaoSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-})
+});
 
-const Visualizacao = mongoose.model('Visualizacao', VisualizacaoSchema)
+const Visualizacao = mongoose.model('Visualizacao', VisualizacaoSchema);
 
-module.exports = Visualizacao
+module.exports = Visualizacao;
